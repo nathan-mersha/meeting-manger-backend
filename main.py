@@ -31,7 +31,7 @@ app.add_middleware(
 
 @app.get("/server")
 async def read_root():
-    return {"Message": "Welcome to Meeting manager"}
+    return {"Message": "This is meeting managers backend by fast api, go to https://mmserver.ml/docs"}
 
 # user API's
 @app.post("/server/user/signup")
