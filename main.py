@@ -1,23 +1,17 @@
-from email.policy import HTTP
 import hashlib
-from turtle import clear
 import uuid
 import smtplib
 import random
 
 import jwt
-from datetime import date,datetime, timedelta
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 from dal.user import UserModelDAL
-from dal.transaction import TransactionModel
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from fastapi import FastAPI, HTTPException, Header, WebSocket
-from starlette.websockets import WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Header
 from lib.notifier import ConnectionManager
 from model.user import LoginModel, UserModel, ForgotPasswordModel, ResetPasswordModel, ChangePasswordModel, UpdateUserModel
-from model.transaction import  TransactionModel, SendMoneyModel, RequestMoneyModel
 from fastapi.middleware.cors import CORSMiddleware
 from dal.transaction import TransactionModelDAL
 from dal.notification import NotificationModelDAL
