@@ -4,26 +4,22 @@ import smtplib
 import random
 
 import jwt
+from datetime import date,datetime
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 from dal.user import UserModelDAL
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from fastapi import FastAPI, HTTPException, Header
-from lib.notifier import ConnectionManager
 from model.user import LoginModel, UserModel, ForgotPasswordModel, ResetPasswordModel, ChangePasswordModel, UpdateUserModel
 from fastapi.middleware.cors import CORSMiddleware
-from dal.transaction import TransactionModelDAL
-from dal.notification import NotificationModelDAL
+
 import json
 
 app = FastAPI()
 user_model_dal = UserModelDAL()
-transaction_model_dal = TransactionModelDAL()
-notification_model_dal = NotificationModelDAL()
 hash_256 = hashlib.sha256()
 token_encrypter_secret = "jopavaeiva3ser223av21r233fascat890"
-connectionManager = ConnectionManager()
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,13 +31,7 @@ app.add_middleware(
 
 @app.get("/server")
 async def read_root():
-    message = {
-        "userId" : "6bb08f15-c2f6-4ed4-9184-b2bfc5186e83",
-        "message" : "Hello there nathan"
-    }
-    res_from_sock = await connectionManager.send_personal_message(json.dumps(message),"6bb08f15-c2f6-4ed4-9184-b2bfc5186e83")
-    print(f"Res from sck is : {res_from_sock}")
-    return {"Message": "Welcome to Generic wallet"}
+    return {"Message": "Welcome to Meeting manager"}
 
 # user API's
 @app.post("/server/user/signup")
