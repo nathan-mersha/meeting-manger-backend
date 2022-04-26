@@ -13,7 +13,7 @@ class UserModel(BaseModel):
     email: str
     phoneNumber: Optional[str] = 'none'
     gender : Optional[str] = 'none'
-    dob : Option[str] = 'none'
+    dob : Optional[str] = 'none'
     profilePicture : Optional[str] = 'none'
     password: str
     payload: Optional[dict] = {}
