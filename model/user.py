@@ -1,40 +1,56 @@
 from datetime import datetime
+from optparse import Option
 from pydantic import BaseModel
 from typing import Optional
 
 
 class UserModel(BaseModel):
     id: Optional[str] = 'none'
-    wallet_id: Optional[str] = 'none'
-    available_balance: Optional[float] = 0
-    name: str
+    firstName: Optional[str] = 'none'
+    lastName: Optional[str] = 'none'
+    companyName : Optional[str] = 'none'
+    title : Optional[str] = 'none'
     email: str
+    phoneNumber: Optional[str] = 'none'
+    gender : Optional[str] = 'none'
+    dob : Option[str] = 'none'
+    profilePicture : Optional[str] = 'none'
     password: str
     payload: Optional[dict] = {}
-    first_modified: Optional[str] = str(datetime.now().isoformat())
-    last_modified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[str] = str(datetime.now().isoformat())
+    lastModified: Optional[str] = str(datetime.now().isoformat())
 
     @staticmethod
     def to_model(user_json):
         return UserModel(
             id=user_json["id"],
-            wallet_id=user_json["walletId"],
-            available_balance=user_json["availableBalance"],
-            name=user_json["name"],
+            firstName=user_json["firstName"],
+            lastName=user_json["lastName"],
+            companyName=user_json["companyName"],
+            title=user_json["title"],
             email=user_json["email"],
+            phoneNumber=user_json["phoneNumber"],
+            gender=user_json["gender"],
+            dob=user_json["dob"],
+            profilePicture=user_json["profilePicture"],
             password=user_json["password"],
             payload=user_json["payload"],
-            first_modified=user_json["firstModified"],
-            last_modified=user_json["lastModified"]
+            firstModified=user_json["firstModified"],
+            lastModified=user_json["lastModified"]
         )
 
     def to_json(self):
         load = {
             "id": self.id,
-            "walletId": self.wallet_id,
-            "availableBalance": self.available_balance,
-            "name" : self.name,
+            "firstName" : self.firstName,
+            "lastName" : self.lastName,
+            "companyName" : self.companyName,
+            "title" : self.title,
             "email" : self.email,
+            "phoneNumber" : self.phoneNumber,
+            "gender" : self.gender,
+            "dob" : self.dob,
+            "profilePicture" : self.profilePicture,
             "password" : self.password,
             "payload" : self.payload,
             "firstModified": self.first_modified,

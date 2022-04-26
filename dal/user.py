@@ -6,8 +6,8 @@ import pymongo
 
 
 class UserModelDAL:
-    DATABASE_NAME = "genericWalletDB"
-    COLLECTION_NAME = "userMM"
+    DATABASE_NAME = "arrangeDevDB"
+    COLLECTION_NAME = "user"
 
     def __init__(self):
         self.config = configparser.ConfigParser()
@@ -20,8 +20,8 @@ class UserModelDAL:
         self.collection = db[self.COLLECTION_NAME]
 
     async def create(self, user_model: UserModel):
-        user_model.first_modified = str(datetime.now().isoformat())
-        user_model.last_modified = str(datetime.now().isoformat())
+        user_model.firstModified = str(datetime.now().isoformat())
+        user_model.lastModified = str(datetime.now().isoformat())
         return self.collection.insert_one(UserModel.to_json(user_model))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING):

@@ -196,16 +196,16 @@ def validate_token_and_get_user(token):
 def send_email(recipients, body, subject):
     try:
         message = MIMEMultipart()
-        message['From'] = "nibjobs.com@gmail.com"
+        message['From'] = "arrangemeet@gmail.com"
         message['To'] = recipients
         message['Subject'] = subject
         message.attach(MIMEText(body, 'plain'))
 
         session = smtplib.SMTP('smtp.gmail.com', 587) #use gmail with port
         session.starttls() #enable security
-        session.login("nibjobs.com@gmail.com", "nkyudfhgucciurcr") #login with mail_id and password
+        session.login("arrangemeet@gmail.com", "axsltblavsirgdeh") #login with mail_id and password
         text = message.as_string()
-        session.sendmail("nibjobs.com@gmail.com", recipients, text)
+        session.sendmail("arrangemeet@gmail.com", recipients, text)
         session.quit()
 
     except Exception as e:
