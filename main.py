@@ -39,9 +39,12 @@ async def sign_up_user(user: UserModel):
 
     # checking if user email does not already exists
     user_datas = user_model_dal.read({"email" : user.email})
-
     if len(user_datas) > 0:
         raise HTTPException(status_code=400, detail="user by that email already exists")
+
+    user_datas_phoneNumber = user_model_dal.read({"phoneNumber" : user.phoneNumber})
+    if len(user_datas_phoneNumber) > 0:
+        raise HTTPException(status_code=400, detail="user by that phone number already exists")
 
     # hash user password
     hashed_password = hashlib.sha256(str(user.password).encode('utf-8'))
@@ -49,14 +52,12 @@ async def sign_up_user(user: UserModel):
     
     # create user id
     user.id = str(uuid.uuid4());
-
-    # create user wallet id
-    user.wallet_id = random.randint(1111111111, 9999999999)
+    
 
     # create user
     await user_model_dal.create(user_model=user)
-    message = "this is a welcome email from Generic wallet";
-    send_email(user.email, message, "Welcome dude")
+    message = "This is a welcome email from Arrange Meeting";
+    send_email(user.email, message, "Welcome to Arrange Meeting")
     
     return user.to_json()
 
@@ -191,6 +192,7 @@ def validate_token_and_get_user(token):
     if expiration < now: # token expired
         return "token has expired"
 
+    # todo : check if user is verified or not
     return user_id
 
 def send_email(recipients, body, subject):

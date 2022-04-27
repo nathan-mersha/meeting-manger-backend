@@ -16,6 +16,7 @@ class UserModel(BaseModel):
     dob : Optional[str] = 'none'
     profilePicture : Optional[str] = 'none'
     password: str
+    isVerified:bool
     payload: Optional[dict] = {}
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
@@ -34,6 +35,7 @@ class UserModel(BaseModel):
             dob=user_json["dob"],
             profilePicture=user_json["profilePicture"],
             password=user_json["password"],
+            isVerified=user_json["isVerified"],
             payload=user_json["payload"],
             firstModified=user_json["firstModified"],
             lastModified=user_json["lastModified"]
@@ -52,6 +54,7 @@ class UserModel(BaseModel):
             "dob" : self.dob,
             "profilePicture" : self.profilePicture,
             "password" : self.password,
+            "isVerified" : self.isVerified,
             "payload" : self.payload,
             "firstModified": self.first_modified,
             "lastModified": self.last_modified
@@ -76,12 +79,27 @@ class ChangePasswordModel(BaseModel):
     new_password: str
 
 class UpdateUserModel(BaseModel):
-    name: Optional[str] = None
-
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    companyName: Optional[str] = None
+    title: Optional[str] = None
+    email: Optional[str] = None
+    phoneNumber: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    profilePicture: Optional[str] = None
+    
     def to_json(self):
         load = {}
-        if self.name != None:
-            load["name"] = self.name
+        if self.firstName != None: load["firstName"] = self.firstName
+        if self.lastName != None: load["lastName"] = self.lastName
+        if self.companyName != None: load["companyName"] = self.companyName
+        if self.title != None: load["title"] = self.title
+        if self.email != None: load["email"] = self.email
+        if self.phoneNumber != None: load["phoneNumber"] = self.phoneNumber
+        if self.gender != None: load["gender"] = self.gender
+        if self.dob != None: load["dob"] = self.dob
+        if self.profilePicture != None: load["profilePicture"] = self.profilePicture
         return load
 
 
