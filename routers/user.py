@@ -112,7 +112,6 @@ async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):
     Emails.send_email(user.email, email_body, email_head)
     return {"message" : "user phone number verified"}
 
-
 @router.post("/request/verification/email")
 async def request_email_verification_code(requestVerificationEmail: RequestVerificationEmail):
     user_query = {"email" : requestVerificationEmail.email}
@@ -137,7 +136,6 @@ async def request_email_verification_code(requestVerificationEmail: RequestVerif
     Emails.send_email(user.email, email_body, email_head)
     return {"message" : "verification code sent via email"}
 
-
 @router.post("/request/verification/phone_number")
 async def request_phone_number_verification_code(requestVerificationPhoneNumber: RequestVerificationPhoneNumber):
     user_query = {"phoneNumber" : requestVerificationPhoneNumber.phoneNumber}
@@ -157,9 +155,7 @@ async def request_phone_number_verification_code(requestVerificationPhoneNumber:
     user_model_dal.update(query=user_query, update_data=update_data)
     
     # todo : send twillio sms here
-    print(f"Phone verification is : {phoneNumberVerification}")
     return {"message" : "verification code sent via phone number"}
-
 
 @router.post("/login")
 async def login_user(loginModel: LoginModel):
@@ -202,7 +198,7 @@ async def forgot_password(forgotModel: ForgotPasswordModel):
     update_data = { 'payload': user_payload}
     # update user here
     user_model_dal.update(user_query, update_data)
-    emails.send_email(user.email, "You have requested reset code", f"Your reset code is : {reset_code}")
+    Emails.send_email(user.email, "You have requested reset code", f"Your reset code is : {reset_code}")
     return {"message" : "your reset code has been sent"}
 
 @router.get("/detail")
@@ -233,7 +229,7 @@ async def reset_password(resetPassword: ResetPasswordModel):
     user_model_dal.update(user_query, update_data) # password successfuly updated and hashed
     
     # send email to user
-    emails.send_email(user.email, "Your password has been changed", "Your password has been changed, if this is not you then report here.")
+    Emails.send_email(user.email, "Your password has been changed", "Your password has been changed, if this is not you then report here.")
     return {"message" : "your password has been changed"}
 
 @router.post("/change_password")
@@ -255,13 +251,36 @@ async def change_password(request:Request, changePassword: ChangePasswordModel, 
     update_data = {'password' : hashed_new_password}
     user_model_dal.update(user_query, update_data)
 
-    emails.send_email(user.email, "Your password has been changed", "Your password has been successfully changed")
+    Emails.send_email(user.email, "Your password has been changed", "Your password has been successfully changed")
     return {"message": "password successfully changed"}
     
 @router.put("/update_profile")
 async def update_profile(request:Request, updateUser: UpdateUserModel, token: str=Header(None)):
     user_id = request.headers["userId"]    
-    
     user_query = {"id" : user_id}
-    user_model_dal.update(user_query,updateUser.to_json())
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="user does not exist")
+
+    user = users[0]
+    updatedDataJSON = updateUser.to_json()
+
+    payload = {}
+    if updateUser.email != None and user.email != updateUser.email: # new email has been updated        
+        updatedDataJSON["isEmailVerified"] = False
+        emailVerification = str(random.randint(111111,999999))
+        payload["emailVerification"] = emailVerification
+        email_body = f"your verification code is {emailVerification}"
+        email_title = f"your verificaion code is {emailVerification}"
+        Emails.send_email(updateUser.email, email_body, email_title)
+
+    if updateUser.phoneNumber != None and user.phoneNumber != updateUser.phoneNumber: # new email has been updated        
+        updatedDataJSON["isPhoneVerified"] = False
+        phoneVerification = str(random.randint(111111,999999))
+        payload["phoneNumberVerification"] = phoneVerification
+        # todo send verification code via twillio
+
+    
+    updatedDataJSON["payload"] = payload
+    user_model_dal.update(user_query,updatedDataJSON)
     return {"message" : "user successfully updated"}
