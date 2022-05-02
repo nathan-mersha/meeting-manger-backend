@@ -1,0 +1,259 @@
+
+from fastapi import APIRouter
+import uuid
+import random
+import jwt
+import hashlib
+from datetime import date
+import configparser
+from lib.email import Emails
+from dal.user import UserModelDAL
+from dateutil.relativedelta import relativedelta
+from fastapi import HTTPException, Header, Request
+from model.user import LoginModel, UserModel, ForgotPasswordModel, ResetPasswordModel, ChangePasswordModel, UpdateUserModel, SignUpModel, VerifyEmailModel,VerifyPhoneNumberModel, RequestVerificationEmail, RequestVerificationPhoneNumber
+
+user_model_dal = UserModelDAL()
+hash_256 = hashlib.sha256()
+emails = Emails()
+
+config = configparser.ConfigParser()
+config.read("./cred/config.ini")
+
+token_encrypter_secret = config["secrets"]["token_encrypter_secret"]
+
+router = APIRouter(
+    prefix="/server/user",
+    tags=["user"],
+    responses={404: {"description": "Not found"}},
+)
+
+
+# user API's
+@router.post("/signup")
+async def sign_up_user(signUpData: SignUpModel):
+    
+    # checking if user email does not already exists
+    user_datas = user_model_dal.read({"email" : signUpData.email})
+
+    if len(user_datas) > 0:
+        raise HTTPException(status_code=400, detail="user by that email already exists")
+
+    user = UserModel(
+        firstName = signUpData.firstName,
+        lastName = signUpData.lastName,
+        companyName = signUpData.companyName,
+        title = signUpData.title,
+        email = signUpData.email,
+        password = signUpData.password,
+        isEmailVerified = False,
+        isPhoneVerified = False
+    )
+
+    # hash user password
+    hashed_password = hashlib.sha256(str(user.password).encode('utf-8'))
+    user.password = hashed_password.hexdigest()
+    
+    # create user id
+    user.id = str(uuid.uuid4())
+
+    emailVerification = str(random.randint(111111,999999))
+    user.payload = {
+        "emailVerification" : emailVerification
+    }
+    # create user
+    await user_model_dal.create(user_model=user)
+    email_body = f"Welcome to Arrange Meeting \n your verification code is {emailVerification}"
+    email_head = "This is a welcome email from Arrange Meeting";
+    Emails.send_email(user.email, email_body, email_head)
+    
+    return user.to_json()
+
+@router.post("/verify/email")
+async def verifiy_email(verifyEmail: VerifyEmailModel):
+    user_query = {"email" : verifyEmail.email}
+    users =  user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="email does not exist") 
+    user = users[0]
+    if user.payload["emailVerification"] != verifyEmail.verificationCode:
+        return HTTPException(status_code=401, detail="Email verification is not correct")
+
+    user.isEmailVerified = True
+    user_model_dal.update(user_query, user.to_json())
+
+    email_body = "Your email is verified"
+    email_head = "Your email is verified"
+    Emails.send_email(user.email, email_body, email_head)
+    return {"message" : "user email verified"}
+
+@router.post("/verify/phone_number")
+async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):
+    user_query = {"phoneNumber" : verifyPhoneNumber.phoneNumber}
+    users =  user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="Phone number does not exist") 
+    user = users[0]
+    if user.payload["phoneNumberVerification"] != verifyPhoneNumber.verificationCode:
+        return HTTPException(status_code=401, detail="Phone number verification is not correct")
+
+    user.isPhoneVerified = True
+    user_model_dal.update(user_query, user.to_json())
+
+    email_body = "Your phone number is verified"
+    email_head = "Your phone number is verified"
+    Emails.send_email(user.email, email_body, email_head)
+    return {"message" : "user phone number verified"}
+
+
+@router.post("/request/verification/email")
+async def request_email_verification_code(requestVerificationEmail: RequestVerificationEmail):
+    user_query = {"email" : requestVerificationEmail.email}
+    users =  user_model_dal.read(query=user_query, limit=1)
+    print(user_query)
+    if len(users) == 0:
+        print("len of users 0")
+        return HTTPException(status_code=401, detail="email does not exist") 
+    user = users[0]
+
+    if user.isEmailVerified:
+        return HTTPException(status_code=401, detail="email already verified") 
+
+    emailVerification = str(random.randint(111111,999999))
+    update_data = {"payload" : {"emailVerification" : emailVerification}}
+    
+    # update the user
+    update_response = user_model_dal.update(query=user_query, update_data=update_data)
+    print(update_response)
+    email_body = f"Your email verification code is {emailVerification}"
+    email_head = "Verification Code";
+    Emails.send_email(user.email, email_body, email_head)
+    return {"message" : "verification code sent via email"}
+
+
+@router.post("/request/verification/phone_number")
+async def request_phone_number_verification_code(requestVerificationPhoneNumber: RequestVerificationPhoneNumber):
+    user_query = {"phoneNumber" : requestVerificationPhoneNumber.phoneNumber}
+    users =  user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="phone number does not exist") 
+    user = users[0]
+    if user.isPhoneVerified:
+        return HTTPException(status_code=400, detail="phone number already verified") 
+
+    phoneNumberVerification = str(random.randint(111111,999999))
+    existing_payload = user.payload
+    existing_payload["phoneNumberVerification"] = phoneNumberVerification
+    update_data = {"payload" : existing_payload}
+    
+    # update the user
+    user_model_dal.update(query=user_query, update_data=update_data)
+    
+    # todo : send twillio sms here
+    print(f"Phone verification is : {phoneNumberVerification}")
+    return {"message" : "verification code sent via phone number"}
+
+
+@router.post("/login")
+async def login_user(loginModel: LoginModel):
+   # compare hash of password
+    hashed_password = hashlib.sha256(str(loginModel.password).encode('utf-8')).hexdigest()
+    user_query = {"email" : loginModel.email}
+    users =  user_model_dal.read(query=user_query, limit=1)
+    
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="email does not exist") 
+
+    user = users[0] 
+    if user.password != hashed_password:
+        return HTTPException(status_code=401, detail="email and password do not match")
+   
+    # generate token
+    after_six_months = date.today() + relativedelta(months=+6)
+    encoded_jwt = jwt.encode({
+        "id" : user.id,
+        "expiration" : str(after_six_months)
+    }, token_encrypter_secret, algorithm="HS256")
+
+    return {
+        "token" : str(encoded_jwt).replace("b'","").replace("'",""),
+        "email" : user.email,
+        "userId" : user.id
+    }
+
+@router.post("/forgot_password")
+async def forgot_password(forgotModel: ForgotPasswordModel): 
+    user_email = forgotModel.email
+    reset_code = random.randint(111111, 999999)
+    user_query = {"email" : user_email}
+    users =  user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="email does not exist") 
+    user = users[0]
+    user_payload = user.payload
+    user_payload["resetCode"] = reset_code
+    update_data = { 'payload': user_payload}
+    # update user here
+    user_model_dal.update(user_query, update_data)
+    emails.send_email(user.email, "You have requested reset code", f"Your reset code is : {reset_code}")
+    return {"message" : "your reset code has been sent"}
+
+@router.get("/detail")
+async def get_user_detail(request:Request, token:str=Header(None)):
+    user_id = request.headers["userId"]
+    user_query = {"id" : user_id}
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=404, detail="user not found")
+    return users[0]
+
+@router.post("/reset_password")
+async def reset_password(resetPassword: ResetPasswordModel):
+    # check if the reset code is correct
+    user_query = {"email" : resetPassword.email}
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=400, detail="user by email not found")
+
+    user = users[0]
+    user_payload = user.payload
+
+    if str(user_payload["resetCode"]) != str(resetPassword.reset_code):
+        return HTTPException(status_code=401, detail="reset code is not correct")
+
+    new_hashed_password = hashlib.sha256(str(resetPassword.new_password).encode('utf-8')).hexdigest()
+    update_data = {'password' : new_hashed_password}
+    user_model_dal.update(user_query, update_data) # password successfuly updated and hashed
+    
+    # send email to user
+    emails.send_email(user.email, "Your password has been changed", "Your password has been changed, if this is not you then report here.")
+    return {"message" : "your password has been changed"}
+
+@router.post("/change_password")
+async def change_password(request:Request, changePassword: ChangePasswordModel, token: str = Header(None)):
+    user_id = request.headers["userId"]    
+   
+    hashed_incomming_old_password = hashlib.sha256(str(changePassword.old_password).encode('utf-8')).hexdigest()
+    user_query = {"id": user_id}
+
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="user does not exist")
+
+    user = users[0]
+    if user.password != hashed_incomming_old_password:
+        return HTTPException(status_code=400, detail="user old password is not correct")
+
+    hashed_new_password = hashlib.sha256(str(changePassword.new_password).encode('utf-8')).hexdigest()
+    update_data = {'password' : hashed_new_password}
+    user_model_dal.update(user_query, update_data)
+
+    emails.send_email(user.email, "Your password has been changed", "Your password has been successfully changed")
+    return {"message": "password successfully changed"}
+    
+@router.put("/update_profile")
+async def update_profile(request:Request, updateUser: UpdateUserModel, token: str=Header(None)):
+    user_id = request.headers["userId"]    
+    
+    user_query = {"id" : user_id}
+    user_model_dal.update(user_query,updateUser.to_json())
+    return {"message" : "user successfully updated"}

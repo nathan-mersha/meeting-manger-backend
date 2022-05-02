@@ -1,13 +1,14 @@
-from model.user import UserModel
+from uvicorn import Config
+from model.server_config import ConfigModel
 from datetime import datetime
 
 import configparser
 import pymongo
 
 
-class UserModelDAL:
+class ConfigModelDAL:
     DATABASE_NAME = "arrangeDevDB"
-    COLLECTION_NAME = "user"
+    COLLECTION_NAME = "config"
 
     def __init__(self):
         self.config = configparser.ConfigParser()
@@ -19,16 +20,16 @@ class UserModelDAL:
         db = client[self.DATABASE_NAME]
         self.collection = db[self.COLLECTION_NAME]
 
-    async def create(self, user_model: UserModel):
-        user_model.firstModified = str(datetime.now().isoformat())
-        user_model.lastModified = str(datetime.now().isoformat())
-        return self.collection.insert_one(UserModel.to_json(user_model))
+    async def create(self, config_model: ConfigModel):
+        config_model.firstModified = str(datetime.now().isoformat())
+        config_model.lastModified = str(datetime.now().isoformat())
+        return self.collection.insert_one(ConfigModel.to_json(config_model))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING):
-        data= []
+        data = []
         response = self.collection.find(query).limit(limit).sort(sort, sort_type)
         for document in response:
-            user_model = UserModel.to_model(document)
+            user_model = ConfigModel.to_model(document)
             data.append(user_model)
         return data
 

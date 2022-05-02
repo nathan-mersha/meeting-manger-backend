@@ -1,25 +1,36 @@
+from collections import UserDict
+from email import contentmanager
 import hashlib
-import uuid
-import smtplib
-import random
-
+from xml.dom import UserDataHandler
+from grpc import StatusCode
+from starlette.datastructures import MutableHeaders
 import jwt
-from datetime import date,datetime
+from datetime import datetime
 from dateutil import parser
-from dateutil.relativedelta import relativedelta
+from uvicorn import Config
+from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from fastapi import FastAPI, HTTPException, Header
-from model.user import LoginModel, UserModel, ForgotPasswordModel, ResetPasswordModel, ChangePasswordModel, UpdateUserModel
-from fastapi.middleware.cors import CORSMiddleware
+from routers import server_config, user
+import configparser
+from model.server_config import ConfigModel
 
-import json
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 user_model_dal = UserModelDAL()
+config_model_dal = ConfigModelDAL()
 hash_256 = hashlib.sha256()
-token_encrypter_secret = "jopavaeiva3ser223av21r233fascat890"
+config = configparser.ConfigParser()
+config.read("./cred/config.ini")
+
+token_encrypter_secret = config["secrets"]["token_encrypter_secret"]
+config_id = config["secrets"]["config_id"]
+
+app.include_router(user.router)
+app.include_router(server_config.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,153 +40,65 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def validate_token(request: Request, call_next):
+    # list of exception routes where validate_token will not be called
+    exception_routes = [
+        "server",
+        "server/user/signup",
+        "server/user/login",
+        "server/user/forgot_password",
+        "server/user/reset_password",
+        "server/user/verify/email",
+        "server/user/verify/phone_number",
+        "server/user/request/verification/email",
+        "server/user/request/verification/phone_number",
+        "docs",
+        "openapi.json",
+        "favicon.ico"
+    ]
+    route = str(request.url).replace(str(request.base_url),"")
+    if route in exception_routes:
+        response = await call_next(request)
+        return response
+
+    token = request.headers["token"]
+    user_id = validate_token_and_get_user(token)
+    if "token" in user_id:
+        return JSONResponse(content={"message" : user_id}, status_code=401,)
+
+    user_query = {"id" : user_id}
+    user_data = user_model_dal.read(query=user_query)
+    if len(user_data) == 0:
+        return JSONResponse(content={"message" : "No user by token found"}, status_code=401,)
+
+    first_user = user_data[0]
+    if not first_user.isEmailVerified:
+        return JSONResponse(content={"message" : "User email is not verified"}, status_code=400,)
+    if first_user.isAccountDeactivated:
+        return JSONResponse(content={"message" : "User account is deactivated"}, status_code=401,)
+    if first_user.isAccountLocked:
+        return JSONResponse(content={"message" : "User account is locked"}, status_code=401,)
+       
+    # attaching the userid on the request object
+    new_header = MutableHeaders(request._headers)
+    new_header["userId"] = str(user_id)
+    request._headers = new_header
+    request.scope.update(headers=request.headers.raw)
+    response = await call_next(request)
+    return response
+
 @app.get("/server")
 async def read_root():
     return {"Message": "This is meeting manager's backend by fast api, go to https://mmserver.ml/docs"}
 
-# user API's
-@app.post("/server/user/signup")
-async def sign_up_user(user: UserModel):
-
-    # checking if user email does not already exists
-    user_datas = user_model_dal.read({"email" : user.email})
-    if len(user_datas) > 0:
-        raise HTTPException(status_code=400, detail="user by that email already exists")
-
-    user_datas_phoneNumber = user_model_dal.read({"phoneNumber" : user.phoneNumber})
-    if len(user_datas_phoneNumber) > 0:
-        raise HTTPException(status_code=400, detail="user by that phone number already exists")
-
-    # hash user password
-    hashed_password = hashlib.sha256(str(user.password).encode('utf-8'))
-    user.password = hashed_password.hexdigest()
-    
-    # create user id
-    user.id = str(uuid.uuid4());
-    
-
-    # create user
-    await user_model_dal.create(user_model=user)
-    message = "This is a welcome email from Arrange Meeting";
-    send_email(user.email, message, "Welcome to Arrange Meeting")
-    
-    return user.to_json()
-
-@app.post("/server/user/login")
-async def login_user(loginModel: LoginModel):
-    
-   # compare hash of password
-    hashed_password = hashlib.sha256(str(loginModel.password).encode('utf-8')).hexdigest()
-    user_query = {"email" : loginModel.email}
-    users =  user_model_dal.read(query=user_query, limit=1)
-    
-    if len(users) == 0:
-        return HTTPException(status_code=401, detail="email does not exist") 
-
-    user = users[0] 
-    if user.password != hashed_password:
-        return HTTPException(status_code=401, detail="email and password do not match")
-   
-    # generate token
-    after_six_months = date.today() + relativedelta(months=+6)
-    encoded_jwt = jwt.encode({
-        "id" : user.id,
-        "expiration" : str(after_six_months)
-    }, token_encrypter_secret, algorithm="HS256")
-
-    return {
-        "token" : str(encoded_jwt).replace("b'","").replace("'",""),
-        "email" : user.email,
-        "userId" : user.id
-        
-        }
-
-@app.post("/server/user/forgot_password")
-async def forgot_password(forgotModel: ForgotPasswordModel): 
-    user_email = forgotModel.email
-    reset_code = random.randint(111111, 999999)
-    user_query = {"email" : user_email}
-    users =  user_model_dal.read(query=user_query, limit=1)
-    if len(users) == 0:
-        return HTTPException(status_code=401, detail="email does not exist") 
-    user = users[0]
-    user_payload = user.payload
-    user_payload["resetCode"] = reset_code
-    update_data = { 'payload': user_payload}
-    # update user here
-    user_model_dal.update(user_query, update_data)
-    send_email(user.email, "You have requested reset code", f"Your reset code is : {reset_code}")
-    return {"message" : "your reset code has been sent"}
-
-@app.get("/server/user/detail")
-async def get_user_detail(token:str=Header(None)):
-    user_id = validate_token_and_get_user(token)    
-    if "token" in user_id:
-        return HTTPException(status_code=400, detail=user_id)
-
-    user_query = {"id" : user_id}
-    users = user_model_dal.read(query=user_query, limit=1)
-    if len(users) == 0:
-        return HTTPException(status_code=404, detail="user not found")
-    return users[0]
-
-@app.post("/server/user/reset_password")
-async def reset_password(resetPassword: ResetPasswordModel):
-    # check if the reset code is correct
-    user_query = {"email" : resetPassword.email}
-    users = user_model_dal.read(query=user_query, limit=1)
-    if len(users) == 0:
-        return HTTPException(status_code=400, detail="user by email not found")
-
-    user = users[0]
-    user_payload = user.payload
-
-    if str(user_payload["resetCode"]) != str(resetPassword.reset_code):
-        return HTTPException(status_code=401, detail="reset code is not correct")
-
-    new_hashed_password = hashlib.sha256(str(resetPassword.new_password).encode('utf-8')).hexdigest()
-    update_data = {'password' : new_hashed_password}
-    user_model_dal.update(user_query, update_data) # password successfuly updated and hashed
-    
-    # send email to user
-    send_email(user.email, "Your password has been changed", "Your password has been changed, if this is not you then report here.")
-    return {"message" : "your password has been changed"}
-
-@app.post("/server/user/change_password")
-async def change_password(changePassword: ChangePasswordModel, token: str = Header(None)):
-    user_id = validate_token_and_get_user(token)    
-    if "token" in user_id:
-        return HTTPException(status_code=400, detail=user_id)
-
-    hashed_incomming_old_password = hashlib.sha256(str(changePassword.old_password).encode('utf-8')).hexdigest()
-    user_query = {"id": user_id}
-
-    users = user_model_dal.read(query=user_query, limit=1)
-    if len(users) == 0:
-        return HTTPException(status_code=401, detail="user does not exist")
-
-    user = users[0]
-    if user.password != hashed_incomming_old_password:
-        return HTTPException(status_code=400, detail="user old password is not correct")
-
-    hashed_new_password = hashlib.sha256(str(changePassword.new_password).encode('utf-8')).hexdigest()
-    update_data = {'password' : hashed_new_password}
-    user_model_dal.update(user_query, update_data)
-
-    send_email(user.email, "Your password has been changed", "Your password has been successfully changed")
-    return {"message": "password successfully changed"}
-    
-@app.put("/server/user/update_profile")
-async def update_profile(updateUser: UpdateUserModel, token: str=Header(None)):
-    user_id = validate_token_and_get_user(token)    
-    if "token" in user_id:
-        return HTTPException(status_code=400, detail=user_id)
-
-    user_query = {"id" : user_id}
-    user_model_dal.update(user_query,updateUser.to_json())
-    return {"message" : "user successfully updated"}
+@app.on_event("startup")
+async def startup_event():
+    # check if server oconfig exists else create new configuration
+    await initialize_config()
 
 def validate_token_and_get_user(token):
+    print("validate token and get user")
     if token == None:
         return "no token provided"
 
@@ -195,21 +118,17 @@ def validate_token_and_get_user(token):
     # todo : check if user is verified or not
     return user_id
 
-def send_email(recipients, body, subject):
-    try:
-        message = MIMEMultipart()
-        message['From'] = "arrangemeet@gmail.com"
-        message['To'] = recipients
-        message['Subject'] = subject
-        message.attach(MIMEText(body, 'plain'))
-
-        session = smtplib.SMTP('smtp.gmail.com', 587) #use gmail with port
-        session.starttls() #enable security
-        session.login("arrangemeet@gmail.com", "axsltblavsirgdeh") #login with mail_id and password
-        text = message.as_string()
-        session.sendmail("arrangemeet@gmail.com", recipients, text)
-        session.quit()
-
-    except Exception as e:
-        print(e)
-        print("Error: unable to send email") 
+async def initialize_config():
+    print("initializing server config")
+    config_query = {"id" : config_id}
+    config_data = config_model_dal.read(query=config_query)
+    if len(config_data) == 0:
+        print("Config has not yet been created...")
+        config_model = ConfigModel(
+            id=config_id,
+            tokenExpirationInDay=60
+        )
+        await config_model_dal.create(config_model=config_model)
+        print("New default server config created")
+        return
+    print("Config data already exists")    

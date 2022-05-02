@@ -16,8 +16,20 @@ class UserModel(BaseModel):
     dob : Optional[str] = 'none'
     profilePicture : Optional[str] = 'none'
     password: str
-    isVerified:bool
+    isEmailVerified:bool
+    isPhoneVerified:bool
     payload: Optional[dict] = {}
+
+    meetings: Optional[list] = []
+    planType: Optional[dict] = {}
+    partners: Optional[list] = []
+    whiteList: Optional[list] = []
+    groups: Optional[list] = []
+    blockList: Optional[list] = []
+    countryCode: Optional[str] = 'none'
+    isAccountDeactivated: Optional[bool] = False
+    isAccountLocked: Optional[bool] = False
+
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
 
@@ -35,8 +47,11 @@ class UserModel(BaseModel):
             dob=user_json["dob"],
             profilePicture=user_json["profilePicture"],
             password=user_json["password"],
-            isVerified=user_json["isVerified"],
+            isEmailVerified=user_json["isEmailVerified"],
+            isPhoneVerified=user_json["isPhoneVerified"],
             payload=user_json["payload"],
+
+            # todo : Continue from here
             firstModified=user_json["firstModified"],
             lastModified=user_json["lastModified"]
         )
@@ -54,13 +69,36 @@ class UserModel(BaseModel):
             "dob" : self.dob,
             "profilePicture" : self.profilePicture,
             "password" : self.password,
-            "isVerified" : self.isVerified,
+            "isEmailVerified" : self.isEmailVerified,
+            "isPhoneVerified" : self.isPhoneVerified,
             "payload" : self.payload,
-            "firstModified": self.first_modified,
-            "lastModified": self.last_modified
+            "firstModified": self.firstModified,
+            "lastModified": self.lastModified
         }
 
         return load
+
+class SignUpModel(BaseModel):
+    firstName: Optional[str] = 'none'
+    lastName: Optional[str] = 'none'
+    companyName : Optional[str] = 'none'
+    title : Optional[str] = 'none'
+    email: str
+    password: str
+
+class RequestVerificationEmail(BaseModel):
+    email:str
+    
+class RequestVerificationPhoneNumber(BaseModel):
+    phoneNumber:str
+    
+class VerifyEmailModel(BaseModel):
+    email: str
+    verificationCode: str
+
+class VerifyPhoneNumberModel(BaseModel):
+    phoneNumber: str
+    verificationCode: str
 
 class LoginModel(BaseModel):
     email: str
