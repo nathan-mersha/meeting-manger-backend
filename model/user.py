@@ -1,6 +1,6 @@
 from datetime import datetime
 from optparse import Option
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, validator
 from typing import Optional
 
 
@@ -33,6 +33,12 @@ class UserModel(BaseModel):
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
 
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        if "@" not in v:
+            raise ValueError("email must contain @")
+        return v.title()
+        
     @staticmethod
     def to_model(user_json):
         return UserModel(

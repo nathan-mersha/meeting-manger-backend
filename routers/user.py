@@ -6,6 +6,8 @@ import jwt
 import hashlib
 from datetime import date
 import configparser
+
+from pydantic import ValidationError
 from lib.email import Emails
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
@@ -38,7 +40,11 @@ async def sign_up_user(signUpData: SignUpModel):
     if len(user_datas) > 0:
         raise HTTPException(status_code=400, detail="user by that email already exists")
 
-    user = UserModel(
+
+    user = None
+    try:
+
+        user = UserModel(
         firstName = signUpData.firstName,
         lastName = signUpData.lastName,
         companyName = signUpData.companyName,
@@ -47,7 +53,9 @@ async def sign_up_user(signUpData: SignUpModel):
         password = signUpData.password,
         isEmailVerified = False,
         isPhoneVerified = False
-    )
+        )
+    except ValidationError as e:
+        return HTTPException(status_code=400, detail=str(e))    
 
     # hash user password
     hashed_password = hashlib.sha256(str(user.password).encode('utf-8'))
