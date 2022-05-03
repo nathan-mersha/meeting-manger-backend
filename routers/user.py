@@ -116,9 +116,8 @@ async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):
 async def request_email_verification_code(requestVerificationEmail: RequestVerificationEmail):
     user_query = {"email" : requestVerificationEmail.email}
     users =  user_model_dal.read(query=user_query, limit=1)
-    print(user_query)
+    
     if len(users) == 0:
-        print("len of users 0")
         return HTTPException(status_code=401, detail="email does not exist") 
     user = users[0]
 
@@ -130,7 +129,7 @@ async def request_email_verification_code(requestVerificationEmail: RequestVerif
     
     # update the user
     update_response = user_model_dal.update(query=user_query, update_data=update_data)
-    print(update_response)
+    
     email_body = f"Your email verification code is {emailVerification}"
     email_head = "Verification Code";
     Emails.send_email(user.email, email_body, email_head)

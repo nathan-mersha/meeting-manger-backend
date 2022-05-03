@@ -1,8 +1,6 @@
 from datetime import datetime
-from optparse import Option
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel, validator
 from typing import Optional
-
 
 class UserModel(BaseModel):
     id: Optional[str] = 'none'
@@ -19,17 +17,10 @@ class UserModel(BaseModel):
     isEmailVerified:bool
     isPhoneVerified:bool
     payload: Optional[dict] = {}
-
-    meetings: Optional[list] = []
-    planType: Optional[dict] = {}
-    partners: Optional[list] = []
-    whiteList: Optional[list] = []
-    groups: Optional[list] = []
-    blockList: Optional[list] = []
+    planType: Optional[dict] = {}   
     countryCode: Optional[str] = 'none'
     isAccountDeactivated: Optional[bool] = False
     isAccountLocked: Optional[bool] = False
-
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
 
@@ -56,8 +47,10 @@ class UserModel(BaseModel):
             isEmailVerified=user_json["isEmailVerified"],
             isPhoneVerified=user_json["isPhoneVerified"],
             payload=user_json["payload"],
-
-            # todo : Continue from here
+            planType=user_json["planType"],
+            countryCode=user_json["countryCode"],
+            isAccountDeactivated=user_json["isAccountDeactivated"]
+            isAccountLocked=user_json["isAccountLocked"]
             firstModified=user_json["firstModified"],
             lastModified=user_json["lastModified"]
         )
@@ -78,6 +71,10 @@ class UserModel(BaseModel):
             "isEmailVerified" : self.isEmailVerified,
             "isPhoneVerified" : self.isPhoneVerified,
             "payload" : self.payload,
+            "planType" : self.planType,
+            "countryCode" : self.countryCode,
+            "isAccountDeactivated" : self.isAccountDeactivated,
+            "isAccountLocked" : self.isAccountLocked,
             "firstModified": self.firstModified,
             "lastModified": self.lastModified
         }
@@ -144,6 +141,7 @@ class UpdateUserModel(BaseModel):
         if self.gender != None: load["gender"] = self.gender
         if self.dob != None: load["dob"] = self.dob
         if self.profilePicture != None: load["profilePicture"] = self.profilePicture
+        if self.countryCode != None: load["countryCode"] = self.countryCode
         return load
 
 
