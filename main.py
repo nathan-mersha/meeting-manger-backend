@@ -7,14 +7,15 @@ from starlette.datastructures import MutableHeaders
 import jwt
 from datetime import datetime
 from dateutil import parser
-from uvicorn import Config
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
-from routers import server_config, user
+from lib.sms import SMS
+from routers import server_config, user, meeting
 import configparser
+import re
 from model.server_config import ConfigModel
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +32,7 @@ config_id = config["secrets"]["config_id"]
 
 app.include_router(user.router)
 app.include_router(server_config.router)
+app.include_router(meeting.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,7 +46,6 @@ app.add_middleware(
 async def validate_token(request: Request, call_next):
     # list of exception routes where validate_token will not be called
     exception_routes = [
-        "server",
         "server/user/signup",
         "server/user/login",
         "server/user/forgot_password",
@@ -53,15 +54,19 @@ async def validate_token(request: Request, call_next):
         "server/user/verify/phone_number",
         "server/user/request/verification/email",
         "server/user/request/verification/phone_number",
+        "server/meeting/confirm_meeting/*",
         "docs",
         "openapi.json",
         "favicon.ico"
     ]
     route = str(request.url).replace(str(request.base_url),"")
-    if route in exception_routes:
-        response = await call_next(request)
-        return response
-
+    for exception_route in exception_routes:
+        matches = re.findall(exception_route, route)
+        if len(matches) > 0:
+            response = await call_next(request)
+            return response
+   
+    
     token = request.headers["token"]
     user_id = validate_token_and_get_user(token)
     if "token" in user_id:
@@ -98,7 +103,6 @@ async def startup_event():
     await initialize_config()
 
 def validate_token_and_get_user(token):
-    print("validate token and get user")
     if token == None:
         return "no token provided"
 

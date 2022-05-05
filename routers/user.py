@@ -29,21 +29,17 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
 # user API's
 @router.post("/signup")
 async def sign_up_user(signUpData: SignUpModel):
-    
     # checking if user email does not already exists
     user_datas = user_model_dal.read({"email" : signUpData.email})
 
     if len(user_datas) > 0:
         raise HTTPException(status_code=400, detail="user by that email already exists")
 
-
     user = None
     try:
-
         user = UserModel(
         firstName = signUpData.firstName,
         lastName = signUpData.lastName,
@@ -87,7 +83,7 @@ async def verifiy_email(verifyEmail: VerifyEmailModel):
         return HTTPException(status_code=401, detail="Email verification is not correct")
 
     user.isEmailVerified = True
-    user_model_dal.update(user_query, user.to_json())
+    user_model_dal.update(query=user_query, update_data=user.to_json())
 
     email_body = "Your email is verified"
     email_head = "Your email is verified"
@@ -105,7 +101,7 @@ async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):
         return HTTPException(status_code=401, detail="Phone number verification is not correct")
 
     user.isPhoneVerified = True
-    user_model_dal.update(user_query, user.to_json())
+    user_model_dal.update(query=user_query, update_data=user.to_json())
 
     email_body = "Your phone number is verified"
     email_head = "Your phone number is verified"
@@ -196,7 +192,7 @@ async def forgot_password(forgotModel: ForgotPasswordModel):
     user_payload["resetCode"] = reset_code
     update_data = { 'payload': user_payload}
     # update user here
-    user_model_dal.update(user_query, update_data)
+    user_model_dal.update(query=user_query, update_data=update_data)
     Emails.send_email(user.email, "You have requested reset code", f"Your reset code is : {reset_code}")
     return {"message" : "your reset code has been sent"}
 
@@ -225,7 +221,7 @@ async def reset_password(resetPassword: ResetPasswordModel):
 
     new_hashed_password = hashlib.sha256(str(resetPassword.new_password).encode('utf-8')).hexdigest()
     update_data = {'password' : new_hashed_password}
-    user_model_dal.update(user_query, update_data) # password successfuly updated and hashed
+    user_model_dal.update(query=user_query, update_data=update_data) # password successfuly updated and hashed
     
     # send email to user
     Emails.send_email(user.email, "Your password has been changed", "Your password has been changed, if this is not you then report here.")
@@ -248,7 +244,7 @@ async def change_password(request:Request, changePassword: ChangePasswordModel, 
 
     hashed_new_password = hashlib.sha256(str(changePassword.new_password).encode('utf-8')).hexdigest()
     update_data = {'password' : hashed_new_password}
-    user_model_dal.update(user_query, update_data)
+    user_model_dal.update(query=user_query, update_data=update_data)
 
     Emails.send_email(user.email, "Your password has been changed", "Your password has been successfully changed")
     return {"message": "password successfully changed"}
@@ -281,5 +277,9 @@ async def update_profile(request:Request, updateUser: UpdateUserModel, token: st
 
     
     updatedDataJSON["payload"] = payload
-    user_model_dal.update(user_query,updatedDataJSON)
+    user_model_dal.update(query=user_query,update_data=updatedDataJSON)
     return {"message" : "user successfully updated"}
+
+
+# get users with pagination
+# delete users

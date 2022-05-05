@@ -28,7 +28,7 @@ class UserModel(BaseModel):
     def email_must_be_valid(cls, v):
         if "@" not in v:
             raise ValueError("email must contain @")
-        return v.title()
+        return v
         
     @staticmethod
     def to_model(user_json):
@@ -49,8 +49,8 @@ class UserModel(BaseModel):
             payload=user_json["payload"],
             planType=user_json["planType"],
             countryCode=user_json["countryCode"],
-            isAccountDeactivated=user_json["isAccountDeactivated"]
-            isAccountLocked=user_json["isAccountLocked"]
+            isAccountDeactivated=user_json["isAccountDeactivated"],
+            isAccountLocked=user_json["isAccountLocked"],
             firstModified=user_json["firstModified"],
             lastModified=user_json["lastModified"]
         )
