@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 user_model_dal = UserModelDAL()
 config_model_dal = ConfigModelDAL()
-hash_256 = hashlib.sha256()
+
 config = configparser.ConfigParser()
 config.read("./cred/config.ini")
 
