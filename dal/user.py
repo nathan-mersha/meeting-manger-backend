@@ -1,6 +1,5 @@
 from model.user import UserModel
 from datetime import datetime
-
 import configparser
 import pymongo
 

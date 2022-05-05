@@ -1,10 +1,6 @@
-from email import message_from_binary_file
-import email
 from http.client import HTTPException
-from fastapi import APIRouter, Header, Query, Request
+from fastapi import APIRouter, Header, Request
 import uuid
-
-from grpc import StatusCode
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel

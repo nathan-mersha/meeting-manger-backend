@@ -1,24 +1,17 @@
-from collections import UserDict
-from email import contentmanager
-import hashlib
-from xml.dom import UserDataHandler
-from grpc import StatusCode
 from starlette.datastructures import MutableHeaders
 import jwt
 from datetime import datetime
 from dateutil import parser
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
-from lib.sms import SMS
 from routers import server_config, user, meeting
 import configparser
 import re
 from model.server_config import ConfigModel
-
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-
 from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 user_model_dal = UserModelDAL()

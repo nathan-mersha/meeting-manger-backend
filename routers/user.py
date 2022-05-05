@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter
 import uuid
 import random
@@ -6,7 +5,6 @@ import jwt
 import hashlib
 from datetime import date
 import configparser
-
 from pydantic import ValidationError
 from lib.email import Emails
 from dal.user import UserModelDAL
