@@ -68,6 +68,8 @@ async def sign_up_user(signUpData: SignUpModel):
     email_head = "This is a welcome email from Arrange Meeting";
     Emails.send_email(user.email, email_body, email_head)
     
+    # remove password
+    user.password = None
     return user.to_json()
 
 @router.post("/verify/email")
@@ -86,7 +88,20 @@ async def verifiy_email(verifyEmail: VerifyEmailModel):
     email_body = "Your email is verified"
     email_head = "Your email is verified"
     Emails.send_email(user.email, email_body, email_head)
-    return {"message" : "user email verified"}
+    
+    # generate token
+    after_six_months = date.today() + relativedelta(months=+6)
+    encoded_jwt = jwt.encode({
+        "id" : user.id,
+        "expiration" : str(after_six_months)
+    }, token_encrypter_secret, algorithm="HS256")
+
+    return {
+        "message" : "user email verified",
+        "token" : str(encoded_jwt).replace("b'","").replace("'",""), 
+        "userId" : user.id,
+        "email" : user.email
+        }
 
 @router.post("/verify/phone_number")
 async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):

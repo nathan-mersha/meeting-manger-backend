@@ -1,9 +1,11 @@
 from http.client import HTTPException
 from fastapi import APIRouter, Header, Request
 import uuid
+
+from requests import head
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel
+from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateMeetingModel
 from lib.email import Emails
 
 meeting_model_dal = MeetingModelDAL()
@@ -145,8 +147,38 @@ async def get_meetings_attendee(request:Request,page:int=1,limit:int= 12,sort="f
     return meetingDatas
 
 @router.put("/update/{meetingId}")
-async def update_meeting():
+async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, request:Request, token:str=Header(None)):
+    userId = request.headers["userId"]
+    meetingQuery = {"id" : meetingId}
+    meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
+    if len(meetingDatas) == 0:
+        return HTTPException(status_code=400, detail="No meeting found by id")
+
+    oldMeetingData = meetingDatas[0]
+    if oldMeetingData["host"] != userId:
+        return HTTPException(status_code=401, detail="User is not the host of a meeting")
+
+    meeting_model_dal.update(query=meetingQuery, update_data=updateMeeting.to_json())
+
+    if oldMeetingData["time"] == updateMeeting.time: # no change in time
+        return {"message" : "meeting successfully updated"}
+    
+
+    attendees_email = []
+    for attendee in oldMeetingData["attendees"]:
+        attendees_email.append(attendee.email)
+
+    email_recipients = ",".join(attendees_email)
+    email_head = f"Meeting time changed to {updateMeeting.time}"
+    email_body = f"Meeting time has been changed to {updateMeeting.time}"
+    Emails.send_email(recipients=email_recipients, body=email_body, head=email_head)
+
+    return {"message" : "meeting successfully updated"}
+
+@router.put("/update_attendee/{meetingId}/{action}")
+async def update_attendee(request:Request, token:str=Header(None)):
     pass
+
 
 @router.delete("/delete")
 async def delete_meeting(meetingId : str, request:Request, token:str=Header(None)):

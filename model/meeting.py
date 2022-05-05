@@ -137,3 +137,33 @@ class MeetingModel(BaseModel):
         }
 
         return load
+
+
+class UpdateMeetingModel(BaseModel):
+    title:Optional[str] = None
+    description:Optional[str] = None
+    date: Optional[str] = None
+    time : Optional[str] = None
+    duration : Optional[str] = None
+    mode : Optional[MeetingModeModel] = None 
+    meetingLink : Optional[str] = None
+    status: Optional[MeetingStatus] = None
+    note : Optional[str] = None
+    reminderNote : Optional[str] = None
+    reminderTitle : Optional[str] = None
+    remindBefore : Optional[str] = None
+
+    def to_json(self):
+        load = {}
+        if self.title != None: load["title"] = self.title
+        if self.description != None: load["description"] = self.description
+        if self.date != None: load["date"] = self.date
+        if self.time != None: load["time"] = self.time
+        if self.duration != None: load["duration"] = self.duration
+        if self.mode != None: load["mode"] = self.mode
+        if self.meetingLink != None: load["meetingLink"] = self.meetingLink
+        if self.status != None: load["status"] = self.status
+        if self.note != None: load["note"] = self.note
+        if self.reminderNote != None: load["reminderNote"] = self.reminderNote
+        if self.reminderTitle != None: load["reminderTitle"] = self.reminderTitle
+        if self.remindBefore != None: load["remindBefore"] = self.remindBefore
