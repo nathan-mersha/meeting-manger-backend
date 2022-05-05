@@ -155,23 +155,28 @@ async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, reques
         return HTTPException(status_code=400, detail="No meeting found by id")
 
     oldMeetingData = meetingDatas[0]
-    if oldMeetingData["host"] != userId:
+    if oldMeetingData.host != userId:
         return HTTPException(status_code=401, detail="User is not the host of a meeting")
 
+    update_json = updateMeeting.to_json()
+
+    print(f"udpate meeting json : {update_json}")
     meeting_model_dal.update(query=meetingQuery, update_data=updateMeeting.to_json())
 
-    if oldMeetingData["time"] == updateMeeting.time: # no change in time
+    if oldMeetingData.time == updateMeeting.time: # no change in time
         return {"message" : "meeting successfully updated"}
     
 
     attendees_email = []
-    for attendee in oldMeetingData["attendees"]:
+    for attendee in oldMeetingData.attendees:
         attendees_email.append(attendee.email)
 
     email_recipients = ",".join(attendees_email)
     email_head = f"Meeting time changed to {updateMeeting.time}"
     email_body = f"Meeting time has been changed to {updateMeeting.time}"
-    Emails.send_email(recipients=email_recipients, body=email_body, head=email_head)
+
+    print(email_recipients)
+    Emails.send_email(email_recipients,email_body,email_head)
 
     return {"message" : "meeting successfully updated"}
 

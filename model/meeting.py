@@ -167,3 +167,5 @@ class UpdateMeetingModel(BaseModel):
         if self.reminderNote != None: load["reminderNote"] = self.reminderNote
         if self.reminderTitle != None: load["reminderTitle"] = self.reminderTitle
         if self.remindBefore != None: load["remindBefore"] = self.remindBefore
+
+        return load

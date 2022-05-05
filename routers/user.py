@@ -186,10 +186,12 @@ async def login_user(loginModel: LoginModel):
         "expiration" : str(after_six_months)
     }, token_encrypter_secret, algorithm="HS256")
 
+    user.password = None
     return {
         "token" : str(encoded_jwt).replace("b'","").replace("'",""),
         "email" : user.email,
-        "userId" : user.id
+
+        "user" : user.to_json()
     }
 
 @router.post("/forgot_password")
