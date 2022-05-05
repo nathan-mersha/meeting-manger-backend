@@ -131,10 +131,10 @@ async def confirm_meeting(meetingId: str,userId: str, status: str):
     return {"message" : f"meeting {status}"}
 
 @router.get("/find/mymeetings/hosted")
-async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified",sortType = -1, token:str=Header(None)):
+async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
     userId = request.headers["userId"]
     hosted_query = {"host" : userId}
-    hostedMeetings = meeting_model_dal.read(hosted_query,page=page,limit=limit, sort=sort,sort_type=sortType)
+    hostedMeetings = meeting_model_dal.read(hosted_query,page=page,limit=limit, sort=sort)
     meetingDatas = MeetingModel.to_json_list(hostedMeetings)
     return meetingDatas
 
