@@ -5,7 +5,7 @@ import uuid
 from requests import head
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateMeetingModel
+from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
 from lib.email import Emails
 
 meeting_model_dal = MeetingModelDAL()
@@ -158,32 +158,92 @@ async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, reques
     if oldMeetingData.host != userId:
         return HTTPException(status_code=401, detail="User is not the host of a meeting")
 
-    update_json = updateMeeting.to_json()
-
-    print(f"udpate meeting json : {update_json}")
     meeting_model_dal.update(query=meetingQuery, update_data=updateMeeting.to_json())
-
-    if oldMeetingData.time == updateMeeting.time: # no change in time
-        return {"message" : "meeting successfully updated"}
-    
 
     attendees_email = []
     for attendee in oldMeetingData.attendees:
         attendees_email.append(attendee.email)
 
-    email_recipients = ",".join(attendees_email)
-    email_head = f"Meeting time changed to {updateMeeting.time}"
-    email_body = f"Meeting time has been changed to {updateMeeting.time}"
-
-    print(email_recipients)
+    email_recipients = ", ".join(attendees_email)
+    email_head = f"{updateMeeting.title} meeting has been updated"
+    email_body = f'''
+        {updateMeeting.title} meeting has been updated
+        Meeting title : {updateMeeting.title}
+        Meeting description : {updateMeeting.description}
+       
+        Date : {updateMeeting.date}
+        Note : {updateMeeting.note}
+        Meeting Link : {updateMeeting.meetingLink}
+    '''
     Emails.send_email(email_recipients,email_body,email_head)
-
     return {"message" : "meeting successfully updated"}
 
-@router.put("/update_attendee/{meetingId}/{action}")
-async def update_attendee(request:Request, token:str=Header(None)):
-    pass
 
+@router.put("/update_attendee/{meetingId}")
+async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, request:Request, token:str=Header(None)):
+    userId = request.headers["userId"]
+    meetingQuery = {"id" : meetingId}
+    meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
+    if len(meetingDatas) == 0:
+        return {"message" : "no meeting found"}
+
+    meetingData = meetingDatas[0]
+    if meetingData.host != userId:
+        return HTTPException(status_code=401,detail="You are not authorized to update this meeting")
+
+    
+    removed_attendees = []
+    newAttendeeData = []
+
+    for oldAttendees in meetingData.attendees:
+        if oldAttendees.userId not in updateAttendees.attendees: # this user has been removed
+            removed_attendees.append(oldAttendees.email)
+        else:
+            newAttendeeData.append(oldAttendees)    
+
+    for updateAttendee in updateAttendees.attendees:
+        if not isAttendeeInTheExistingList(updateAttendee, meetingData.attendees): # newly added attendee           
+            attendeeQuery = {"id" : updateAttendee}
+            attendeeDatas = user_model_dal.read(query=attendeeQuery, limit=1)
+
+            if len(attendeeDatas) == 0:
+                break
+            attendeeData = attendeeDatas[0]
+            ma = MeetingAttendees(
+                id = str(uuid.uuid4()),
+                userId=attendeeData.id,
+                email=attendeeData.email,
+                status=MeetingAttendeStatus.pending
+            )    
+            newAttendeeData.append(ma)
+            # todo sending email for newly added attendee
+            email_head = f"Request meeting : {meetingData.title}"
+            email_body = f'''
+                Meeting title : {meetingData.title}
+            Meeting description : {meetingData.description}
+            Attendees No : {len(updateAttendees)}
+            Date : {meetingData.date}
+            Note : {meetingData.note}
+            Meeting Link : {meetingData.meetingLink}
+            Are you comming ?
+            Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{meetingData.id}/{attendeeData.id}/accept
+            No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{meetingData.id}/{attendeeData.id}/reject
+            '''
+            Emails.send_email(attendeeData.email, email_body, email_head)
+
+    new_meeting_update_data = {"attendees" : MeetingAttendees.to_json_list(newAttendeeData)}
+    meeting_model_dal.update(query=meetingQuery, update_data=new_meeting_update_data)
+
+    if len(removed_attendees) > 0:
+        # email added attendees
+        email_recipients_removed = ", ".join(removed_attendees)
+        email_head_removed = f"You have been removed from meeting, {meetingData.title}"
+        email_body_removed = f'''
+            You have been removed from meeting, {meetingData.title}
+        '''
+        Emails.send_email(email_recipients_removed, email_body_removed, email_head_removed)
+
+    return {"message" : "successfully updated attedees"}
 
 @router.delete("/delete")
 async def delete_meeting(meetingId : str, request:Request, token:str=Header(None)):
@@ -208,5 +268,12 @@ async def delete_meeting(meetingId : str, request:Request, token:str=Header(None
     email_body = f'''
         The meeting {meetingId} has been deleted by the host
     '''            
-    Emails.send_email(",".join(emails), email_body, email_head)
+    Emails.send_email(", ".join(emails), email_body, email_head)
     return {"message" : "meeting has been successfully deleted"}
+
+def isAttendeeInTheExistingList(attendee,oldList):
+    exists = False
+    for oldAttendee in oldList:
+        if oldAttendee.userId == attendee:
+            exists = True
+    return exists        

@@ -138,6 +138,8 @@ class MeetingModel(BaseModel):
 
         return load
 
+class UpdateAttendee(BaseModel):
+    attendees: Optional[list] = []
 
 class UpdateMeetingModel(BaseModel):
     title:Optional[str] = None
