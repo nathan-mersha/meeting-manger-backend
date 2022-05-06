@@ -4,14 +4,14 @@ from datetime import datetime
 from dateutil import parser
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
-from routers import server_config, user, meeting
+from lib.sms import SMS
+from routers import server_config, user, meeting, group
 import configparser
 import re
 from model.server_config import ConfigModel
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
 
 app = FastAPI()
 user_model_dal = UserModelDAL()
@@ -26,6 +26,8 @@ config_id = config["secrets"]["config_id"]
 app.include_router(user.router)
 app.include_router(server_config.router)
 app.include_router(meeting.router)
+app.include_router(group.router)
+
 
 app.add_middleware(
     CORSMiddleware,

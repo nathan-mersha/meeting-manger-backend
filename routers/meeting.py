@@ -1,8 +1,6 @@
 from http.client import HTTPException
 from fastapi import APIRouter, Header, Request
 import uuid
-
-from requests import head
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
@@ -245,7 +243,7 @@ async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, reque
 
     return {"message" : "successfully updated attedees"}
 
-@router.delete("/delete")
+@router.delete("/delete/{meetingId}")
 async def delete_meeting(meetingId : str, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
     meetingQuery = {"id" : meetingId}

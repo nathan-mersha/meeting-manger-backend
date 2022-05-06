@@ -15,5 +15,14 @@ class SMS():
         self.client = Client(self.account_sid, self.auth_token)
 
     def send(self, to, message):
-        message = self.client.messages.create(from_=self.phone_number, body=message, to=to)
-        print(message)
+        print(f"account sid : {self.account_sid}")
+        print(f"auth token : {self.auth_token}")
+        print(f"phone number : {self.phone_number}")
+        response = self.client.messages.create(from_=self.phone_number, body=message, to=to)
+        print(vars(response))
+
+    def get(self, sid):
+        status = self.client.messages.get(sid)
+        # print(status.status)
+        print(vars(status))
+
