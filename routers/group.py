@@ -1,8 +1,5 @@
-from doctest import DocTestFailure
 from http.client import HTTPException
-from turtle import update
 from fastapi import APIRouter, Header, Request
-import uuid
 from dal.group import GroupModelDAL
 from lib.email import Emails
 
