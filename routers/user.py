@@ -169,15 +169,21 @@ async def request_phone_number_verification_code(requestVerificationPhoneNumber:
 async def login_user(loginModel: LoginModel):
    # compare hash of password
     hashed_password = hashlib.sha256(str(loginModel.password).encode('utf-8')).hexdigest()
-    user_query = {"email" : loginModel.email}
+    user_query = {"email" : loginModel.emailOrPassword}
+
+    if "@" in loginModel.emailOrPassword:
+        user_query = {"email" : loginModel.emailOrPassword}
+    else:
+        user_query = {"phoneNumber" : loginModel.emailOrPassword}
+
     users =  user_model_dal.read(query=user_query, limit=1)
     
     if len(users) == 0:
-        return HTTPException(status_code=401, detail="email does not exist") 
+        return HTTPException(status_code=401, detail="email/phoneNumber does not exist") 
 
     user = users[0] 
     if user.password != hashed_password:
-        return HTTPException(status_code=401, detail="email and password do not match")
+        return HTTPException(status_code=401, detail="email/phoneNumber and password do not match")
    
     # generate token
     after_six_months = date.today() + relativedelta(months=+6)
@@ -190,7 +196,6 @@ async def login_user(loginModel: LoginModel):
     return {
         "token" : str(encoded_jwt).replace("b'","").replace("'",""),
         "email" : user.email,
-
         "user" : user.to_json()
     }
 
