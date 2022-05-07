@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fileinput import filename
+from fastapi import APIRouter, UploadFile, File
 import uuid
 import random
 import jwt
@@ -21,6 +22,8 @@ config = configparser.ConfigParser()
 config.read("./cred/config.ini")
 
 token_encrypter_secret = config["secrets"]["token_encrypter_secret"]
+# file_upload_path = config["file"]["file_upload_path"]
+file_upload_path = "C:/Users/nathan/Documents/Workspace/meeting_manager/backend/img_save"
 
 router = APIRouter(
     prefix="/server/user",
@@ -325,6 +328,15 @@ async def update_profile(request:Request, updateUser: UpdateUserModel, token: st
     user_model_dal.update(query=user_query,update_data=updatedDataJSON)
     return {"message" : "user successfully updated"}
 
+@router.post("/uploadfile")
+async def upload_file(file: bytes=File(...), token:str=Header(None)):
+    name = f"{str(uuid.uuid4())}.jpg"
+    fileName = f"{file_upload_path}/{name}"
+    with open(fileName,'wb') as image:
+        image.write(file)
+        image.close()
 
+    
+    return {"filePath" : f"https://mmserver.ml/images/{name}"}
 # get users with pagination
 # delete users

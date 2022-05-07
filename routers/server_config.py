@@ -18,6 +18,7 @@ config_id = config["secrets"]["config_id"]
 @router.put("/")
 async def update_config(request:Request, updateConfig:ConfigModel, token:str=Header(None)):
     config_query = {"id" : config_id}
+    
     # update config
 
 @router.get("/")

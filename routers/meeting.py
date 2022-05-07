@@ -3,12 +3,14 @@ from fastapi import APIRouter, Header, Request
 import uuid
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
+from lib.sms import SMS
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
 from lib.email import Emails
 
 meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
 emails = Emails()
+sms = SMS()
 router = APIRouter(
     prefix="/server/meeting",
     tags=["meeting"],
@@ -55,6 +57,9 @@ async def create(createMeeting: MeetingModel,request:Request, token:str=Header(N
             No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{meetingAttendee}/reject
         '''
         Emails.send_email(attendeeUser.email, email_body, email_head)
+
+        if attendeeUser.phoneNumber != None:
+            sms.send(to=attendeeUser.phoneNumber, message=f"You have been invited to join a meeting from {host_data.firstName}. Check your email for more")
 
     createMeeting.attendees = MeetingAttendees.to_model_list(editedAttendees)
     meeting_data = await meeting_model_dal.create(meeting_model=createMeeting)
