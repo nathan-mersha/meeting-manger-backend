@@ -6,7 +6,7 @@ import jwt
 import hashlib
 from datetime import date
 import configparser
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from lib.email import Emails
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
@@ -340,3 +340,14 @@ async def upload_file(file: bytes=File(...), token:str=Header(None)):
     return {"filePath" : f"https://mmserver.ml/images/{name}"}
 # get users with pagination
 # delete users
+
+
+
+
+class DeleteUserModel(BaseModel):
+    email : str
+
+@router.delete("/delete_for_debug")
+async def delete_user_for_debug(deleteUserModel:DeleteUserModel):
+    user_model_dal.delete(query={"email" : deleteUserModel.email})
+    return {"message" : f"user {deleteUserModel.email} deleted"}

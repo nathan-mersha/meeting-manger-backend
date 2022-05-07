@@ -54,7 +54,10 @@ async def validate_token(request: Request, call_next):
         "server/user/verify/phone_number",
         "server/user/request/verification/email",
         "server/user/request/verification/phone_number",
+        "server/user/delete_for_debug",
         "server/meeting/confirm_meeting/*",
+        "server/contactUs/create",
+        ""
         "docs",
         "openapi.json",
         "favicon.ico"

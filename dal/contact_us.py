@@ -26,7 +26,7 @@ class ContactUsModelDAL:
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
         data= []
         offset = (page * limit) - limit
-        response = self.collection.find(query).populate("owner", "user").skip(offset).limit(limit).sort(sort, sort_type)
+        response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
             contactUsModel = ContactModel.to_model(document)
             data.append(contactUsModel)

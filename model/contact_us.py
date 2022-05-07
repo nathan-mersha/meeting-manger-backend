@@ -7,6 +7,7 @@ class ContactModel(BaseModel):
     title : str
     body : str 
     sender : Optional[str] = None
+    resolved : Optional[bool] = False
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
 
@@ -17,6 +18,7 @@ class ContactModel(BaseModel):
             title=contact_us_json["title"],
             body=contact_us_json["body"],
             sender=contact_us_json["sender"],
+            resolved = contact_us_json["resolved"],
             firstModified=contact_us_json["firstModified"],
             lastModified=contact_us_json["lastModified"],
         )
@@ -27,6 +29,7 @@ class ContactModel(BaseModel):
         if self.title != None: load["title"] = self.title
         if self.body != None: load["body"] = self.body
         if self.sender != None: load["sender"] = self.sender
+        if self.resolved != None: load["resolved"] = self.resolved
         if self.firstModified != None: load["firstModified"] = self.firstModified
         if self.lastModified != None: load["lastModified"] = self.lastModified
 
