@@ -7,7 +7,7 @@ from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from routers import server_config, user, meeting, group
+from routers import server_config, user, meeting, group, contact_us
 import configparser
 import re
 from model.server_config import ConfigModel
@@ -32,7 +32,7 @@ app.include_router(user.router)
 app.include_router(server_config.router)
 app.include_router(meeting.router)
 app.include_router(group.router)
-
+app.include_router(contact_us.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -127,9 +127,10 @@ def validate_token_and_get_user(token):
 
 async def create_indexes():
     print("Creating indexes ...")
-    await user_model_dal.create_index()
-    await meeting_model_dal.create_index()
-    await group_model_dal.create_index()
+    
+    # await user_model_dal.create_index()
+    # await meeting_model_dal.create_index()
+    # await group_model_dal.create_index()
     
 
 async def initialize_config():

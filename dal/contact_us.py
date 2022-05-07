@@ -1,4 +1,4 @@
-from model.group import ContactModel
+from model.contact_us import ContactModel
 from datetime import datetime
 import configparser
 import pymongo
