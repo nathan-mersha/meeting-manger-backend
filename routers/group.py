@@ -34,7 +34,7 @@ async def get_my_groups_owner(request:Request,page:int=1, limit:int=12, sort="fi
 async def get_my_groups_member(request:Request,page:int=1, limit:int=12, sort="fistModified",sortType = -1, token:str=Header(None)):
     userId = request.headers["userId"]
 
-    groupQuery = {"owner" : userId}
+    groupQuery = {"members" : {"$in"  : userId}}
     groups = group_model_dal.read(groupQuery, page=page, limit=limit, sort=sort, sort_type=sortType)
     groupDatas = GroupModel.to_json_list(groups)
     return groupDatas;
