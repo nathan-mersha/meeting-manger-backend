@@ -153,7 +153,7 @@ async def request_email_verification_code(requestVerificationEmail: RequestVerif
     update_data = {"payload" : {"emailVerification" : emailVerification}}
     
     # update the user
-    update_response = user_model_dal.update(query=user_query, update_data=update_data)
+    user_model_dal.update(query=user_query, update_data=update_data)
     
     email_body = f"Your email verification code is {emailVerification}"
     email_head = "Verification Code";
@@ -178,6 +178,7 @@ async def request_phone_number_verification_code(requestVerificationPhoneNumber:
     # update the user
     user_model_dal.update(query=user_query, update_data=update_data)
     
+    sms.send(to=user.phoneNumber, message=f"Your Arrange verification code is : {phoneNumberVerification}")
     # todo : send twillio sms here
     return {"message" : "verification code sent via phone number"}
 
@@ -205,7 +206,7 @@ async def login_user(loginModel: LoginModel):
 
     if user.phoneNumber != None and not user.isPhoneVerified:
         return HTTPException(status_code=401, detail = "user needs to verify phone number")
-            
+
     if user.password != hashed_password:
         return HTTPException(status_code=401, detail="email/phoneNumber and password do not match")
    
