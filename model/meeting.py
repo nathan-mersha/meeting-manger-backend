@@ -20,9 +20,9 @@ class MeetingAttendeStatus(str, enum.Enum):
     reject = "reject"    
 
 class MeetingAttendees(BaseModel):
-    id: Optional[str] = 'none'
-    userId : Optional[str] = 'none'
-    email: Optional[str] = 'none'
+    id: Optional[str] = None
+    userId : Optional[str] = None
+    email: Optional[str] = None
     status : Optional[MeetingAttendeStatus] = MeetingAttendeStatus.pending
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
@@ -64,24 +64,32 @@ class MeetingAttendees(BaseModel):
             "firstModified" : self.firstModified,
             "lastModified" : self.lastModified
         }    
+
+        if self.id != None: load["id"] = self.id
+        if self.userId != None: load["userId"] = self.userId
+        if self.email != None: load["email"] = self.email
+        if self.status != None: load["status"] = self.status
+        if self.firstModified != None: load["firstModified"] = self.firstModified
+        if self.lastModified != None: load["lastModified"] = self.lastModified
+
         return load
 
 class MeetingModel(BaseModel):
-    id: Optional[str] = 'none'
-    title:Optional[str] = 'none'
-    description:Optional[str] = 'none'
-    host: str
+    id: Optional[str] = None
+    title:Optional[str] = None
+    description:Optional[str] = None
+    host: str 
     attendees : Optional[list] = []
-    date: Optional[str] = 'none'
-    time : Optional[str] = 'none'
-    duration : Optional[str] = 'none'
+    date: Optional[str] = None
+    time : Optional[str] = None
+    duration : Optional[str] = None
     mode : MeetingModeModel
-    meetingLink : Optional[str] = 'none'
+    meetingLink : Optional[str] = None
     status: MeetingStatus
-    note : Optional[str] = 'none'
-    reminderNote : Optional[str] = 'none'
-    reminderTitle : Optional[str] = 'none'
-    remindBefore : Optional[str] = 'none'
+    note : Optional[str] = None
+    reminderNote : Optional[str] = None
+    reminderTitle : Optional[str] = None
+    remindBefore : Optional[str] = None
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
 
@@ -116,25 +124,26 @@ class MeetingModel(BaseModel):
         return toJSONLists 
 
     def to_json(self):
-        load = {
-            "id": self.id,
-            "title" : self.title,
-            "description" : self.description,
-            "host" : self.host,
-            "attendees" : MeetingAttendees.to_json_list(self.attendees),
-            "date" : self.date,
-            "time" : self.time,
-            "duration" : self.duration,
-            "mode" : self.mode,
-            "meetingLink" : self.meetingLink,
-            "status" : self.status,
-            "note" : self.note,
-            "reminderNote" : self.reminderNote,
-            "reminderTitle" : self.reminderTitle,
-            "remindBefore" : self.remindBefore,
-            "firstModified": self.firstModified,
-            "lastModified": self.lastModified
-        }
+        
+        load = {}
+
+        if self.id != None: load["id"] = self.id
+        if self.title != None: load["title"] = self.title
+        if self.description != None: load["description"] = self.description
+        if self.host != None: load["host"] = self.host
+        if self.attendees != None: load["attendees"] = self.attendees
+        if self.date != None: load["date"] = self.date
+        if self.time != None: load["time"] = self.time
+        if self.duration != None: load["duration"] = self.duration
+        if self.mode != None: load["mode"] = self.mode
+        if self.meetingLink != None: load["meetingLink"] = self.meetingLink
+        if self.status != None: load["status"] = self.status
+        if self.note != None: load["note"] = self.note
+        if self.reminderNote != None: load["reminderNote"] = self.reminderNote
+        if self.reminderTitle != None: load["reminderTitle"] = self.reminderTitle
+        if self.remindBefore != None: load["remindBefore"] = self.remindBefore
+        if self.firstModified != None: load["firstModified"] = self.firstModified
+        if self.lastModified != None: load["lastModified"] = self.lastModified
 
         return load
 

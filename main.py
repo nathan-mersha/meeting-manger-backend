@@ -1,10 +1,12 @@
+from email.headerregistry import Group
 from starlette.datastructures import MutableHeaders
 import jwt
 from datetime import datetime
 from dateutil import parser
 from dal.config import ConfigModelDAL
+from dal.group import GroupModelDAL
+from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from lib.sms import SMS
 from routers import server_config, user, meeting, group
 import configparser
 import re
@@ -15,6 +17,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 user_model_dal = UserModelDAL()
+meeting_model_dal = MeetingModelDAL()
+group_model_dal = GroupModelDAL()
+
 config_model_dal = ConfigModelDAL()
 
 config = configparser.ConfigParser()
@@ -94,8 +99,8 @@ async def read_root():
 
 @app.on_event("startup")
 async def startup_event():
-    # check if server oconfig exists else create new configuration
     await initialize_config()
+    await create_indexes()
 
 def validate_token_and_get_user(token):
     if token == None:
@@ -116,6 +121,13 @@ def validate_token_and_get_user(token):
 
     # todo : check if user is verified or not
     return user_id
+
+async def create_indexes():
+    print("Creating indexes ...")
+    await user_model_dal.create_index()
+    await meeting_model_dal.create_index()
+    await group_model_dal.create_index()
+    
 
 async def initialize_config():
     print("initializing server config")

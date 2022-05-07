@@ -18,6 +18,11 @@ class MeetingModelDAL:
         db = client[self.DATABASE_NAME]
         self.collection = db[self.COLLECTION_NAME]
 
+    async def create_index(self):
+        print("Creating meeting indexes for host,id")
+        self.collection.create_index([('id', pymongo.ASCENDING)])
+        self.collection.create_index([('host', pymongo.ASCENDING)])
+
     async def create(self, meeting_model: MeetingModel):
         meeting_model.firstModified = str(datetime.now().isoformat())
         meeting_model.lastModified = str(datetime.now().isoformat())

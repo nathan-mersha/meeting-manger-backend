@@ -5,10 +5,10 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class GroupModel(BaseModel):
-    id: Optional[str] = 'none'
-    name : str = 'none'
-    description : Optional[str] = 'none'
-    owner: Optional[str] = 'none'
+    id: Optional[str] = None
+    name : str = None
+    description : Optional[str] = None
+    owner: Optional[str] = None
     members: Optional[list] = []
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
@@ -26,15 +26,16 @@ class GroupModel(BaseModel):
         )
 
     def to_json(self):
-        load = {
-            "id" : self.id,
-            "name" : self.name,
-            "description" : self.description,
-            "owner" : self.owner,
-            "members" : self.members,
-            "firstModified" : self.firstModified,
-            "lastModified" : self.lastModified
-        }
+
+        load = {}
+
+        if self.id != None: load["id"] = self.id
+        if self.name != None: load["name"] = self.name
+        if self.description != None: load["description"] = self.description
+        if self.owner != None: load["owner"] = self.owner
+        if self.members != None: load["members"] = self.members
+        if self.firstModified != None: load["firstModified"] = self.firstModified
+        if self.lastModified != None: load["lastModified"] = self.lastModified
 
         return load
 
@@ -53,9 +54,9 @@ class GroupModel(BaseModel):
         return toJSONLists   
 
 class UpdateGroupModel(BaseModel):
-    name: str = 'none'
-    description : Optional[str] = 'none'
-    owner: Optional[str] = 'none'
+    name: str = None
+    description : Optional[str] = None
+    owner: Optional[str] = None
     members: Optional[list] = []
 
     def to_json(self):
@@ -65,4 +66,10 @@ class UpdateGroupModel(BaseModel):
             "owner" : self.owner,
             "members" : self.members
         }
+
+        if self.name != None: load["name"] = self.name
+        if self.description != None: load["description"] = self.description
+        if self.owner != None: load["owner"] = self.owner
+        if self.members != None: load["members"] = self.members
+        
         return load

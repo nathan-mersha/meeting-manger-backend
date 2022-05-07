@@ -18,11 +18,19 @@ class UserModelDAL:
         db = client[self.DATABASE_NAME]
         self.collection = db[self.COLLECTION_NAME]
 
+    async def create_index(self):
+        print("Creating user indexes for : id,email,phonenumber")
+        self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
+        self.collection.create_index([('email', pymongo.ASCENDING)],unique=True)
+        self.collection.create_index([('phoneNumber', pymongo.ASCENDING)])
+        
+
     async def create(self, user_model: UserModel):
         user_model.firstModified = str(datetime.now().isoformat())
         user_model.lastModified = str(datetime.now().isoformat())
         return self.collection.insert_one(UserModel.to_json(user_model))
 
+    
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
         data= []
         offset = (page * limit) - limit

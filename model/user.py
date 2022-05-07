@@ -3,22 +3,22 @@ from pydantic import BaseModel, validator
 from typing import Optional
 
 class UserModel(BaseModel):
-    id: Optional[str] = 'none'
-    firstName: Optional[str] = 'none'
-    lastName: Optional[str] = 'none'
-    companyName : Optional[str] = 'none'
-    title : Optional[str] = 'none'
+    id: Optional[str] = None
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    companyName : Optional[str] = None
+    title : Optional[str] = None
     email: str
-    phoneNumber: Optional[str] = 'none'
-    gender : Optional[str] = 'none'
-    dob : Optional[str] = 'none'
-    profilePicture : Optional[str] = 'none'
+    phoneNumber: Optional[str] = None
+    gender : Optional[str] = None
+    dob : Optional[str] = None
+    profilePicture : Optional[str] = None
     password: str
     isEmailVerified:bool
     isPhoneVerified:bool
     payload: Optional[dict] = {}
     planType: Optional[dict] = {}   
-    countryCode: Optional[str] = 'none'
+    countryCode: Optional[str] = None
     isAccountDeactivated: Optional[bool] = False
     isAccountLocked: Optional[bool] = False
     firstModified: Optional[str] = str(datetime.now().isoformat())
@@ -33,52 +33,53 @@ class UserModel(BaseModel):
     @staticmethod
     def to_model(user_json):
         return UserModel(
-            id=user_json["id"],
-            firstName=user_json["firstName"],
-            lastName=user_json["lastName"],
-            companyName=user_json["companyName"],
-            title=user_json["title"],
-            email=user_json["email"],
-            phoneNumber=user_json["phoneNumber"],
-            gender=user_json["gender"],
-            dob=user_json["dob"],
-            profilePicture=user_json["profilePicture"],
-            password=user_json["password"],
-            isEmailVerified=user_json["isEmailVerified"],
-            isPhoneVerified=user_json["isPhoneVerified"],
-            payload=user_json["payload"],
-            planType=user_json["planType"],
-            countryCode=user_json["countryCode"],
-            isAccountDeactivated=user_json["isAccountDeactivated"],
-            isAccountLocked=user_json["isAccountLocked"],
-            firstModified=user_json["firstModified"],
-            lastModified=user_json["lastModified"]
+            id=user_json["id"] if "id" in user_json else None,
+            firstName=user_json["firstName"] if "firstName" in user_json else None,
+            lastName=user_json["lastName"] if "lastName" in user_json else None,
+            companyName=user_json["companyName"] if "companyName" in user_json else None,
+            title=user_json["title"] if "title" in user_json else None,
+            email=user_json["email"] if "email" in user_json else None,
+            phoneNumber=user_json["phoneNumber"] if "phoneNumber" in user_json else None,
+            gender=user_json["gender"] if "gender" in user_json else None,
+            dob=user_json["dob"] if "dob" in user_json else None,
+            profilePicture=user_json["profilePicture"] if "profilePicture" in user_json else None,
+            password=user_json["password"] if "password" in user_json else None,
+            isEmailVerified=user_json["isEmailVerified"] if "isEmailVerified" in user_json else None,
+            isPhoneVerified=user_json["isPhoneVerified"] if "isPhoneVerified" in user_json else None,
+            payload=user_json["payload"] if "payload" in user_json else None,
+            planType=user_json["planType"] if "planType" in user_json else None,
+            countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
+            isAccountDeactivated=user_json["isAccountDeactivated"] if "isAccountDeactivated" in user_json else None,
+            isAccountLocked=user_json["isAccountLocked"] if "isAccountLocked" in user_json else None,
+            firstModified=user_json["firstModified"] if "firstModified" in user_json else None,
+            lastModified=user_json["lastModified"] if "lastModified" in user_json else None
         )
 
     def to_json(self):
-        load = {
-            "id": self.id,
-            "firstName" : self.firstName,
-            "lastName" : self.lastName,
-            "companyName" : self.companyName,
-            "title" : self.title,
-            "email" : self.email,
-            "phoneNumber" : self.phoneNumber,
-            "gender" : self.gender,
-            "dob" : self.dob,
-            "profilePicture" : self.profilePicture,
-            "password" : self.password,
-            "isEmailVerified" : self.isEmailVerified,
-            "isPhoneVerified" : self.isPhoneVerified,
-            "payload" : self.payload,
-            "planType" : self.planType,
-            "countryCode" : self.countryCode,
-            "isAccountDeactivated" : self.isAccountDeactivated,
-            "isAccountLocked" : self.isAccountLocked,
-            "firstModified": self.firstModified,
-            "lastModified": self.lastModified
-        }
 
+        load = {}
+
+        if self.id != None: load["id"] = self.id
+        if self.firstName != None: load["firstName"] = self.firstName
+        if self.lastName != None: load["lastName"] = self.lastName
+        if self.companyName != None: load["companyName"] = self.companyName
+        if self.title != None: load["title"] = self.title
+        if self.email != None: load["email"] = self.email
+        if self.phoneNumber != None: load["phoneNumber"] = self.phoneNumber
+        if self.gender != None: load["gender"] = self.gender
+        if self.dob != None: load["dob"] = self.dob
+        if self.profilePicture != None: load["profilePicture"] = self.profilePicture
+        if self.password != None: load["password"] = self.password
+        if self.isEmailVerified != None: load["isEmailVerified"] = self.isEmailVerified
+        if self.isPhoneVerified != None: load["isPhoneVerified"] = self.isPhoneVerified
+        if self.payload != None: load["payload"] = self.payload
+        if self.planType != None: load["planType"] = self.planType
+        if self.countryCode != None: load["countryCode"] = self.countryCode
+        if self.isAccountDeactivated != None: load["isAccountDeactivated"] = self.isAccountDeactivated
+        if self.isAccountLocked != None: load["isAccountLocked"] = self.isAccountLocked
+        if self.firstModified != None: load["firstModified"] = self.firstModified
+        if self.lastModified != None: load["lastModified"] = self.lastModified
+        
         return load
 
 class SignUpModel(BaseModel):

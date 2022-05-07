@@ -18,7 +18,7 @@ router = APIRouter(
 async def create(createGroup: GroupModel, request:Request, token:str=Header(None)):
     user_id = request.headers["userId"]
     createGroup.owner = user_id
-    group_model_dal.create(createGroup)
+    await group_model_dal.create(createGroup)
     return {"message" : "Successfully created group"}
 
 @router.get("/find/my_groups/owner")
@@ -26,7 +26,7 @@ async def get_my_groups_owner(request:Request,page:int=1, limit:int=12, sort="fi
     userId = request.headers["userId"]
 
     groupQuery = {"owner" : userId}
-    groups = group_model_dal.read(groupQuery, page=page, limit=limit, sort=sort, sort_type=sortType)
+    groups = group_model_dal.read(groupQuery, page=page, limit=limit, sort=sort)
     groupDatas = GroupModel.to_json_list(groups)
     return groupDatas;
 
@@ -34,8 +34,8 @@ async def get_my_groups_owner(request:Request,page:int=1, limit:int=12, sort="fi
 async def get_my_groups_member(request:Request,page:int=1, limit:int=12, sort="fistModified",sortType = -1, token:str=Header(None)):
     userId = request.headers["userId"]
 
-    groupQuery = {"members" : {"$in"  : userId}}
-    groups = group_model_dal.read(groupQuery, page=page, limit=limit, sort=sort, sort_type=sortType)
+    groupQuery = {"members" : {"$in"  : [userId]}}
+    groups = group_model_dal.read(groupQuery, page=page, limit=limit, sort=sort)
     groupDatas = GroupModel.to_json_list(groups)
     return groupDatas;
 

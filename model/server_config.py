@@ -4,7 +4,7 @@ from typing import Optional
 
 
 class ConfigModel(BaseModel):
-    id: Optional[str] = 'none'
+    id: Optional[str] = None
     tokenExpirationInDay: Optional[int] = 60 #default 60 days 
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
@@ -19,11 +19,11 @@ class ConfigModel(BaseModel):
         )
 
     def to_json(self):
-        load = {
-            "id": self.id,
-            "tokenExpirationInDay" : self.tokenExpirationInDay,
-            "firstModified": self.firstModified,
-            "lastModified": self.lastModified
-        }
+        load = {}
+
+        if self.id != None: load["id"] = self.id
+        if self.tokenExpirationInDay != None: load["tokenExpirationInDay"] = self.tokenExpirationInDay
+        if self.firstModified != None: load["firstModified"] = self.firstModified
+        if self.lastModified != None: load["lastModified"] = self.lastModified
 
         return load
