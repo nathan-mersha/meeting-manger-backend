@@ -197,7 +197,15 @@ async def login_user(loginModel: LoginModel):
     if len(users) == 0:
         return HTTPException(status_code=401, detail="email/phoneNumber does not exist") 
 
-    user = users[0] 
+    user = users[0]
+    # user cant login if it has not verified email and password
+
+    if not user.isEmailVerified:
+        return HTTPException(status_code=401, detail = "user needs to verifiy email")
+
+    if user.phoneNumber != None and not user.isPhoneVerified:
+        return HTTPException(status_code=401, detail = "user needs to verify phone number")
+            
     if user.password != hashed_password:
         return HTTPException(status_code=401, detail="email/phoneNumber and password do not match")
    
