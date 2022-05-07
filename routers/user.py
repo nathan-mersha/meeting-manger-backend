@@ -70,7 +70,7 @@ async def sign_up_user(signUpData: SignUpModel):
     phoneVerification = str(random.randint(111111,999999))
     user.payload = {
         "emailVerification" : emailVerification,
-        "phoneVerification" : phoneVerification
+        "phoneNumberVerification" : phoneVerification
     }
     # create user
     await user_model_dal.create(user_model=user)
