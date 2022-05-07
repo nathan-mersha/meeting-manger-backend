@@ -1,12 +1,12 @@
-from model.group import GroupModel
+from model.group import ContactModel
 from datetime import datetime
 import configparser
 import pymongo
 
 
-class GroupModelDAL:
+class ContactUsModelDAL:
     DATABASE_NAME = "arrangeDevDB"
-    COLLECTION_NAME = "group"
+    COLLECTION_NAME = "contactUs"
 
     def __init__(self):
         self.config = configparser.ConfigParser()
@@ -18,22 +18,18 @@ class GroupModelDAL:
         db = client[self.DATABASE_NAME]
         self.collection = db[self.COLLECTION_NAME]
 
-    async def create_index(self):
-        print("Creating group indexes for id")
-        self.collection.create_index([('id', pymongo.ASCENDING)])
-
-    async def create(self, group_model: GroupModel):
-        group_model.firstModified = str(datetime.now().isoformat())
-        group_model.lastModified = str(datetime.now().isoformat())
-        return self.collection.insert_one(GroupModel.to_json(group_model))
+    async def create(self, contactUsModel: ContactModel):
+        contactUsModel.firstModified = str(datetime.now().isoformat())
+        contactUsModel.lastModified = str(datetime.now().isoformat())
+        return self.collection.insert_one(ContactModel.to_json(contactUsModel))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
         data= []
         offset = (page * limit) - limit
-        response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
+        response = self.collection.find(query).populate("owner", "user").skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
-            group_model = GroupModel.to_model(document)
-            data.append(group_model)
+            contactUsModel = ContactModel.to_model(document)
+            data.append(contactUsModel)
         return data
 
 
