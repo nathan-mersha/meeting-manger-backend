@@ -10,12 +10,13 @@ from lib.email import Emails
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException, Header, Request
+from lib.sms import SMS
 from model.user import LoginModel, UserModel, ForgotPasswordModel, ResetPasswordModel, ChangePasswordModel, UpdateUserModel, SignUpModel, VerifyEmailModel,VerifyPhoneNumberModel, RequestVerificationEmail, RequestVerificationPhoneNumber
 
 user_model_dal = UserModelDAL()
 hash_256 = hashlib.sha256()
 emails = Emails()
-
+sms = SMS()
 config = configparser.ConfigParser()
 config.read("./cred/config.ini")
 
@@ -51,6 +52,7 @@ async def sign_up_user(signUpData: SignUpModel):
         title = signUpData.title,
         email = signUpData.email,
         password = signUpData.password,
+        phoneNumber = signUpData.phoneNumber,
         isEmailVerified = False,
         isPhoneVerified = False
         )
@@ -65,8 +67,10 @@ async def sign_up_user(signUpData: SignUpModel):
     user.id = str(uuid.uuid4())
 
     emailVerification = str(random.randint(111111,999999))
+    phoneVerification = str(random.randint(111111,999999))
     user.payload = {
-        "emailVerification" : emailVerification
+        "emailVerification" : emailVerification,
+        "phoneVerification" : phoneVerification
     }
     # create user
     await user_model_dal.create(user_model=user)
@@ -74,6 +78,12 @@ async def sign_up_user(signUpData: SignUpModel):
     email_head = "This is a welcome email from Arrange Meeting";
     Emails.send_email(user.email, email_body, email_head)
     
+    # send verification for phone number
+    if user.phoneNumber != None:
+        message = f"Your Arrange meeting verification code is : {phoneVerification}"
+        sms.send(to=user.phoneNumber, message=message)
+        print(f"SMS verification message : {message}")
+
     # remove password
     user.password = None
     return user.to_json()
