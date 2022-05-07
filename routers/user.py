@@ -22,8 +22,8 @@ config = configparser.ConfigParser()
 config.read("./cred/config.ini")
 
 token_encrypter_secret = config["secrets"]["token_encrypter_secret"]
-# file_upload_path = config["file"]["file_upload_path"]
-file_upload_path = "C:/Users/nathan/Documents/Workspace/meeting_manager/backend/img_save"
+file_upload_path = config["file"]["file_upload_path"]
+# file_upload_path = "C:/Users/nathan/Documents/Workspace/meeting_manager/backend/img_save"
 
 router = APIRouter(
     prefix="/server/user",
