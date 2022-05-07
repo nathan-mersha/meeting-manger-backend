@@ -189,12 +189,12 @@ async def request_phone_number_verification_code(requestVerificationPhoneNumber:
 async def login_user(loginModel: LoginModel):
    # compare hash of password
     hashed_password = hashlib.sha256(str(loginModel.password).encode('utf-8')).hexdigest()
-    user_query = {"email" : loginModel.emailOrPassword}
+    user_query = {"email" : loginModel.emailOrPhoneNumber}
 
     if "@" in loginModel.emailOrPassword:
-        user_query = {"email" : loginModel.emailOrPassword}
+        user_query = {"email" : loginModel.emailOrPhoneNumber}
     else:
-        user_query = {"phoneNumber" : loginModel.emailOrPassword}
+        user_query = {"phoneNumber" : loginModel.emailOrPhoneNumber}
 
     users =  user_model_dal.read(query=user_query, limit=1)
     

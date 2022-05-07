@@ -106,7 +106,7 @@ class VerifyPhoneNumberModel(BaseModel):
     verificationCode: str
 
 class LoginModel(BaseModel):
-    emailOrPassword: str
+    emailOrPhoneNumber: str
     password: str        
 
 class ForgotPasswordModel(BaseModel):
