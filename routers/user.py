@@ -36,6 +36,12 @@ async def sign_up_user(signUpData: SignUpModel):
     if len(user_datas) > 0:
         raise HTTPException(status_code=400, detail="user by that email already exists")
 
+    if signUpData.phoneNumber != None:
+        user_phone_query =  {"phoneNumber" : signUpData.phoneNumber}
+        user_datas_phone = user_model_dal.read(user_phone_query,limit=1)
+        if len(user_datas_phone) > 0:
+            raise HTTPException(status_code=400, detail="user by that phone number already exists") 
+
     user = None
     try:
         user = UserModel(

@@ -83,11 +83,12 @@ class UserModel(BaseModel):
         return load
 
 class SignUpModel(BaseModel):
-    firstName: Optional[str] = 'none'
-    lastName: Optional[str] = 'none'
-    companyName : Optional[str] = 'none'
-    title : Optional[str] = 'none'
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    companyName : Optional[str] = None
+    title : Optional[str] = None
     email: str
+    phoneNumber : Optional[str] = None
     password: str
 
 class RequestVerificationEmail(BaseModel):
