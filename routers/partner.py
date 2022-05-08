@@ -19,13 +19,13 @@ router = APIRouter(
 async def create(partnerId: str, request : Request, token:str=Header(None)):
     userId = request.headers["userId"]
     
-    newPartnerQuery = {"userId" : partnerId}
+    newPartnerQuery = {"id" : partnerId}
     partnersData = user_model_dal.read(query=newPartnerQuery, limit=1)
     if len(partnersData) == 0:
         return {"message" : "user not found"}
     partnerData = partnersData[0]
 
-    subjectQuery = {"userId" : userId}
+    subjectQuery = {"id" : userId}
     subjectsData = user_model_dal.read(query=subjectQuery, limit=1)
     if len(subjectsData) == 0:
         return {"message" : "user subject not found"}
@@ -37,8 +37,9 @@ async def create(partnerId: str, request : Request, token:str=Header(None)):
     if len(partnersData) > 0:
         return {"message" : "user is already a partner"}
 
+
     partnerModel = PartnerModel(
-        id=uuid.uuid4(),
+        id=str(uuid.uuid4()),
         subject = userId,
         partner = partnerId
     )
@@ -51,18 +52,18 @@ async def create(partnerId: str, request : Request, token:str=Header(None)):
         https://mmserver.ml/todo/add/user/as/a/partner/by/link
     '''
 
-    Emails.send_email(recipients=partnerData.email, body=email_body, head=email_head)
+    Emails.send_email(partnerData.email, email_body, email_head)
     return {"message" : "partner successfully created"} 
 
 @router.get("/find/i_added")
-async def get_meetings_hosted(status:str, request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
     userId = request.headers["userId"]
     partnersQuery = {"subject" : userId}
     partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort)
     return partnersData
 
 @router.get("/find/people_added_me")
-async def get_meetings_hosted(status:str, request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
     userId = request.headers["userId"]
     partnersQuery = {"partner" : userId}
     partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort)

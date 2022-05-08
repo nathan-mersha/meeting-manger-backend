@@ -23,7 +23,7 @@ class PartnerModel(BaseModel):
         load = {}
         if self.id != None: load["id"] = self.id
         if self.subject != None: load["subject"] = self.subject
-        if self.partner != None: load["partner"] = self.parnter
+        if self.partner != None: load["partner"] = self.partner
         if self.firstModified != None: load["firstModified"] = self.firstModified
         if self.lastModified != None: load["lastModified"] = self.lastModified
 
