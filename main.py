@@ -58,8 +58,8 @@ async def validate_token(request: Request, call_next):
         "server/user/delete_for_debug",
         "server/meeting/confirm_meeting/*",
         "server/contactUs/create",
-        "server/partner/respond_as_a_partner"
-        ""
+        "server/partner/respond_as_a_partner/*",
+        "",
         "docs",
         "openapi.json",
         "favicon.ico"
@@ -70,8 +70,7 @@ async def validate_token(request: Request, call_next):
         if len(matches) > 0:
             response = await call_next(request)
             return response
-   
-    
+
     token = request.headers["token"]
     user_id = validate_token_and_get_user(token)
     if "token" in user_id:

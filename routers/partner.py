@@ -78,10 +78,11 @@ async def respond_as_a_partner(partnerId:str, subjectId: str):
     )
     partner_query = {"subject" : subjectId, "partner" : partnerId}
     partnersData = partner_model_dal.read(query=partner_query, limit=1)
+    
     if len(partnersData) > 0:
         return {"message" : "user is already a partner"}
 
-    partner_model_dal.create(partnerModel)
+    await partner_model_dal.create(partnerModel)
     return {"message" : f"You are now a partner with : {partnerId}"}
 
 @router.delete("/delete/{partnerId}")
