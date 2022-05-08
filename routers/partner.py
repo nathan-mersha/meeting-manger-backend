@@ -49,7 +49,7 @@ async def create(partnerId: str, request : Request, token:str=Header(None)):
     email_body = f'''
         {subjectData.firstName} has added you as a partner
         if you would like to add this person as a partner click on the link below
-        https://mmserver.ml/todo/add/user/as/a/partner/by/link
+        https://mmserver.ml/server/partner/respond_as_a_partner/{userId}/{partnerId}
     '''
 
     Emails.send_email(partnerData.email, email_body, email_head)
@@ -68,6 +68,21 @@ async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="fir
     partnersQuery = {"partner" : userId}
     partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort)
     return partnersData
+
+@router.get("/respond_as_a_partner/{partnerId}/{subjectId}")
+async def respond_as_a_partner(partnerId:str, subjectId: str):
+    partnerModel = PartnerModel(
+        id=str(uuid.uuid4()),
+        subject=subjectId,
+        partner=partnerId
+    )
+    partner_query = {"subject" : subjectId, "partner" : partnerId}
+    partnersData = partner_model_dal.read(query=partner_query, limit=1)
+    if len(partnersData) > 0:
+        return {"message" : "user is already a partner"}
+
+    partner_model_dal.create(partnerModel)
+    return {"message" : f"You are now a partner with : {partnerId}"}
 
 @router.delete("/delete/{partnerId}")
 async def delete_meeting(partnerId : str, request:Request, token:str=Header(None)):

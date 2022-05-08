@@ -58,6 +58,7 @@ async def validate_token(request: Request, call_next):
         "server/user/delete_for_debug",
         "server/meeting/confirm_meeting/*",
         "server/contactUs/create",
+        "server/partner/respond_as_a_partner"
         ""
         "docs",
         "openapi.json",
