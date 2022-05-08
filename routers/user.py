@@ -191,7 +191,7 @@ async def login_user(loginModel: LoginModel):
     hashed_password = hashlib.sha256(str(loginModel.password).encode('utf-8')).hexdigest()
     user_query = {"email" : loginModel.emailOrPhoneNumber}
 
-    if "@" in loginModel.emailOrPassword:
+    if "@" in loginModel.emailOrPhoneNumber:
         user_query = {"email" : loginModel.emailOrPhoneNumber}
     else:
         user_query = {"phoneNumber" : loginModel.emailOrPhoneNumber}

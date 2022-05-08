@@ -5,7 +5,6 @@ import pymongo
 
 
 class ContactUsModelDAL:
-    DATABASE_NAME = "arrangeDevDB"
     COLLECTION_NAME = "contactUs"
 
     def __init__(self):
@@ -14,8 +13,9 @@ class ContactUsModelDAL:
 
         # database connection string
         data_base_connection_str = str(self.config['mongodb']['database_url'])
+        data_base_name = str(self.config['mongodb']['database_name'])
         client = pymongo.MongoClient(data_base_connection_str, serverSelectionTimeoutMS=5000)
-        db = client[self.DATABASE_NAME]
+        db = client[data_base_name]
         self.collection = db[self.COLLECTION_NAME]
 
     async def create(self, contactUsModel: ContactModel):
