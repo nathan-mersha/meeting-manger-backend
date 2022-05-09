@@ -7,7 +7,7 @@ from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from routers import server_config, user, meeting, group, contact_us, partner
+from routers import server_config, user, meeting, group, contact_us, partner,whitelist
 import configparser
 import re
 from model.server_config import ConfigModel
@@ -34,6 +34,7 @@ app.include_router(meeting.router)
 app.include_router(group.router)
 app.include_router(contact_us.router)
 app.include_router(partner.router)
+app.include_router(whitelist.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,6 +46,7 @@ app.add_middleware(
 
 @app.middleware("http")
 async def validate_token(request: Request, call_next):
+    print("Hereeeeeeeee validating token")
     # list of exception routes where validate_token will not be called
     exception_routes = [
         "server/user/signup",
@@ -59,7 +61,6 @@ async def validate_token(request: Request, call_next):
         "server/meeting/confirm_meeting/*",
         "server/contactUs/create",
         "server/partner/respond_as_a_partner/*",
-        "",
         "docs",
         "openapi.json",
         "favicon.ico"

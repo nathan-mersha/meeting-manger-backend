@@ -37,8 +37,8 @@ class PartnerModel(BaseModel):
         return toModelLists    
 
     @staticmethod
-    def to_json_list(contactUs_models):
+    def to_json_list(partner_models):
         toJSONLists = []
-        for partner_model in contactUs_models:
+        for partner_model in partner_models:
             toJSONLists.append(partner_model.to_json())
         return toJSONLists   
