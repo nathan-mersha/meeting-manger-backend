@@ -7,7 +7,7 @@ from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from routers import server_config, user, meeting, group, contact_us, partner,whitelist
+from routers import server_config, user, meeting, group, contact_us, partner,whitelist,blocklist
 import configparser
 import re
 from model.server_config import ConfigModel
@@ -35,6 +35,7 @@ app.include_router(group.router)
 app.include_router(contact_us.router)
 app.include_router(partner.router)
 app.include_router(whitelist.router)
+app.include_router(blocklist.router)
 
 app.add_middleware(
     CORSMiddleware,
