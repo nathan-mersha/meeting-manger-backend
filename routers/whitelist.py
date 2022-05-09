@@ -1,11 +1,6 @@
-from doctest import DocTestFailure
-from email.policy import HTTP
 from http.client import HTTPException
 from fastapi import APIRouter, Header, Request
 import uuid
-from grpc import StatusCode
-
-from httplib2 import HttpLib2Error
 from model.whitelist import CreateWhiteListModel, WhiteListModel
 from lib.email import Emails
 from dal.whitelist import WhiteListModelDAL
