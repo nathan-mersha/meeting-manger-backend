@@ -46,7 +46,6 @@ app.add_middleware(
 
 @app.middleware("http")
 async def validate_token(request: Request, call_next):
-    print("Hereeeeeeeee validating token")
     # list of exception routes where validate_token will not be called
     exception_routes = [
         "server/user/signup",
@@ -61,6 +60,7 @@ async def validate_token(request: Request, call_next):
         "server/meeting/confirm_meeting/*",
         "server/contactUs/create",
         "server/partner/respond_as_a_partner/*",
+        "server/whitelist/request/*",
         "docs",
         "openapi.json",
         "favicon.ico"

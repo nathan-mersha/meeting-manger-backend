@@ -14,6 +14,7 @@ class WhiteListModel(BaseModel):
     partyAAccepted : Optional[bool] = False
     partyBAccepted : Optional[bool] = False
     note : Optional[str] = None
+    responded: Optional[bool] = False
     firstModified: Optional[str] = str(datetime.now().isoformat())
     lastModified: Optional[str] = str(datetime.now().isoformat())
 
@@ -26,6 +27,7 @@ class WhiteListModel(BaseModel):
             partyAAccepted=whiteList_json["partyAAccepted"],
             partyBAccepted=whiteList_json["partyBAccepted"], 
             note=whiteList_json["note"],
+            responded=whiteList_json["responded"],
             firstModified=whiteList_json["firstModified"],
             lastModified=whiteList_json["lastModified"],
         ) 
@@ -38,6 +40,7 @@ class WhiteListModel(BaseModel):
         if self.partyAAccepted != None: load["partyAAccepted"] = self.partyAAccepted
         if self.partyBAccepted != None: load["partyBAccepted"] = self.partyBAccepted
         if self.note != None: load["note"] = self.note
+        if self.responded != None: load["responded"] = self.responded
         if self.firstModified != None: load["firstModified"] = self.firstModified
         if self.lastModified != None: load["lastModified"] = self.lastModified
         return load
