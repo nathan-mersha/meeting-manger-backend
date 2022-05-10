@@ -1,6 +1,7 @@
 from http.client import HTTPException
 from fastapi import APIRouter, Header, Request
 import uuid
+from lib.shared import SharedFuncs
 from model.whitelist import CreateWhiteListModel, WhiteListModel
 from lib.email import Emails
 from dal.whitelist import WhiteListModelDAL
@@ -8,6 +9,7 @@ from dal.user import UserModelDAL
 
 whiteList_model_dal = WhiteListModelDAL()
 user_model_dal = UserModelDAL()
+sharedFuncs = SharedFuncs()
 
 router = APIRouter(
     prefix="/server/whitelist",
@@ -18,6 +20,11 @@ router = APIRouter(
 @router.post("/create")
 async def create(createWhiteList: CreateWhiteListModel,request : Request,  token:str=Header(None)):
     userId = request.headers["userId"]
+
+    isUserBlocked = sharedFuncs.isUserBlocked(userId, createWhiteList.to)
+    if isUserBlocked:
+        return {"message" : "you can not add this person in a white list"}
+        
     whiteListQuery = {
         "partyA" : userId,
         "partyB" : createWhiteList.to

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Header, Request
 import uuid
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
+from lib.shared import SharedFuncs
 from lib.sms import SMS
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
 from lib.email import Emails
@@ -11,6 +12,8 @@ meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
 emails = Emails()
 sms = SMS()
+sharedFuncs = SharedFuncs()
+
 router = APIRouter(
     prefix="/server/meeting",
     tags=["meeting"],
@@ -32,6 +35,11 @@ async def create(createMeeting: MeetingModel,request:Request, token:str=Header(N
 
     for meetingAttendee in createMeeting.attendees:
         attendeeUserQuery = {"id" : meetingAttendee}
+        isUserBlocked = sharedFuncs.isUserBlocked(user_id, meetingAttendee)
+        
+        if isUserBlocked:
+            break
+
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
         if len(attendeeDatas) == 0:
             break
@@ -67,7 +75,6 @@ async def create(createMeeting: MeetingModel,request:Request, token:str=Header(N
     if not meeting_data.acknowledged:
         return {"message" : "something went wrong while creating meeting"}
 
-    
     # todo notify attendees via email about the created meeting
     return {"message" : "meeting successfully created"} 
 

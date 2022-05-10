@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Header, Request
 from dal.partner import PartnerModelDAL
 from dal.user import UserModelDAL
+from lib.shared import SharedFuncs
 from model.partner import PartnerModel
 from lib.email import Emails
 import uuid
 
 partner_model_dal = PartnerModelDAL()
 user_model_dal = UserModelDAL()
+sharedFuncs = SharedFuncs()
+
 router = APIRouter(
     prefix="/server/partner",
     tags=["partner"],
@@ -17,6 +20,11 @@ router = APIRouter(
 async def create(partnerId: str, request : Request, token:str=Header(None)):
     userId = request.headers["userId"]
     
+    isUserBlocked = sharedFuncs.isUserBlocked(userId, partnerId)
+    
+    if isUserBlocked:
+        return {"message" : "you can not add this person as a partner"}
+
     newPartnerQuery = {"id" : partnerId}
     partnersData = user_model_dal.read(query=newPartnerQuery, limit=1)
     if len(partnersData) == 0:
