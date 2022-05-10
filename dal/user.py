@@ -23,6 +23,9 @@ class UserModelDAL:
         self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
         self.collection.create_index([('email', pymongo.ASCENDING)],unique=True)
         self.collection.create_index([('phoneNumber', pymongo.ASCENDING)])
+        # self.collection.create_index([("firstName", pymongo.TEXT), ("lastName", pymongo.TEXT), ("email", pymongo.TEXT), ("companyName", pymongo.TEXT), ("phoneNumber", pymongo.TEXT)])
+        self.collection.create_index([("firstName", pymongo.TEXT)])
+        print("Completed creating index for user")
         
 
     async def create(self, user_model: UserModel):

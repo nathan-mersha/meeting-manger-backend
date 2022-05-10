@@ -1,7 +1,6 @@
 import configparser
 import re
 from datetime import datetime
-
 import jwt
 from dateutil import parser
 from fastapi import FastAPI, Request
@@ -15,7 +14,7 @@ from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from model.server_config import ConfigModel
 from routers import (blocklist, contact_us, group, meeting, partner,
-                     server_config, user, whitelist)
+                     server_config, user, whitelist, search)
 
 app = FastAPI()
 user_model_dal = UserModelDAL()
@@ -38,6 +37,7 @@ app.include_router(contact_us.router)
 app.include_router(partner.router)
 app.include_router(whitelist.router)
 app.include_router(blocklist.router)
+app.include_router(search.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,7 +50,7 @@ app.add_middleware(
 @app.middleware("http")
 async def validate_token(request: Request, call_next):
     # list of exception routes where validate_token will not be called
-    exception_routes = [
+    exceptionRoutes = [
         "server/user/signup",
         "server/user/login",
         "server/user/forgot_password",
@@ -69,7 +69,7 @@ async def validate_token(request: Request, call_next):
         "favicon.ico"
     ]
     route = str(request.url).replace(str(request.base_url),"")
-    for exception_route in exception_routes:
+    for exception_route in exceptionRoutes:
         matches = re.findall(exception_route, route)
         if len(matches) > 0:
             response = await call_next(request)
@@ -133,7 +133,7 @@ def validate_token_and_get_user(token):
 async def create_indexes():
     print("Creating indexes ...")
     
-    # await user_model_dal.create_index()
+    await user_model_dal.create_index()
     # await meeting_model_dal.create_index()
     # await group_model_dal.create_index()
     
