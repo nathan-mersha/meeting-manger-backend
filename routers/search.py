@@ -14,8 +14,6 @@ router = APIRouter(
 async def create(token:str=Header(None), query="", page:int=1, limit:int=12,sort="firstModified"):
     if query == "":
         return {}
-    
-    print(f"Query is : {query}")
     userQuery = {"$text" : {"$search" : query}}
 
     userData = userModelDAL.read(query=userQuery, page=page, limit=limit, sort=sort)

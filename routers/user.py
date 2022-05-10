@@ -210,7 +210,7 @@ async def login_user(loginModel: LoginModel):
     if not user.isEmailVerified:
         return HTTPException(status_code=401, detail = "user needs to verifiy email")
 
-    if (user.phoneNumber != None and str(user.phoneNumber).strip()) != "" and not user.isPhoneVerified:
+    if (user.phoneNumber != None and str(user.phoneNumber).strip() != "" ) and not user.isPhoneVerified:
         return HTTPException(status_code=401, detail = "user needs to verify phone number")
 
     if user.password != hashed_password:

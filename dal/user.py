@@ -19,14 +19,17 @@ class UserModelDAL:
         self.collection = db[self.COLLECTION_NAME]
 
     async def create_index(self):
-        print("Creating user indexes for : id,email,phonenumber")
+        print("Creating user indexes for user model")
         self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
         self.collection.create_index([('email', pymongo.ASCENDING)],unique=True)
         self.collection.create_index([('phoneNumber', pymongo.ASCENDING)])
-        # self.collection.create_index([("firstName", pymongo.TEXT), ("lastName", pymongo.TEXT), ("email", pymongo.TEXT), ("companyName", pymongo.TEXT), ("phoneNumber", pymongo.TEXT)])
+
         self.collection.create_index([("firstName", pymongo.TEXT)])
-        print("Completed creating index for user")
-        
+        self.collection.create_index([("lastName", pymongo.TEXT)])
+        self.collection.create_index([("email", pymongo.TEXT)])
+        self.collection.create_index([("companyName", pymongo.TEXT)])
+        self.collection.create_index([("phoneNumber", pymongo.TEXT)])
+             
 
     async def create(self, user_model: UserModel):
         user_model.firstModified = str(datetime.now().isoformat())

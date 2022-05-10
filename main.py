@@ -133,7 +133,7 @@ def validate_token_and_get_user(token):
 async def create_indexes():
     print("Creating indexes ...")
     
-    await user_model_dal.create_index()
+    # await user_model_dal.create_index()
     # await meeting_model_dal.create_index()
     # await group_model_dal.create_index()
     
