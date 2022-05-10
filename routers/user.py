@@ -2,12 +2,12 @@ import configparser
 import hashlib
 import random
 import uuid
+import jwt
 from datetime import date
 
-import jwt
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, Header, HTTPException, Request
 from lib.email import Emails
 from lib.sms import SMS
 from model.user import (ChangePasswordModel, ForgotPasswordModel, LoginModel,

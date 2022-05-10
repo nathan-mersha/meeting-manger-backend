@@ -4,7 +4,7 @@ import configparser
 import pymongo
 
 
-class BlockListUsModelDAL:
+class BlockListModelDAL:
     COLLECTION_NAME = "blockList"
 
     def __init__(self):

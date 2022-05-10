@@ -17,8 +17,9 @@ class SMS():
     def send(self, to, message):
         try:
             self.client.messages.create(from_=self.phone_number, body=message, to=to)
-        except:
-            print("error while sending sms")
+        except Exception as e:
+
+            print(f"error while sending sms : {str(e)}")
 
     def get(self, sid):
         status = self.client.messages.get(sid)

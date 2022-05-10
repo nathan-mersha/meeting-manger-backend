@@ -134,7 +134,7 @@ class MeetingModel(BaseModel):
         if self.title != None: load["title"] = self.title
         if self.description != None: load["description"] = self.description
         if self.host != None: load["host"] = self.host
-        if self.attendees != None: load["attendees"] = self.attendees
+        if self.attendees != None: load["attendees"] = MeetingAttendees.to_json_list(self.attendees)
         if self.date != None: load["date"] = self.date
         if self.time != None: load["time"] = self.time
         if self.duration != None: load["duration"] = self.duration
