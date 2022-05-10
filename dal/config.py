@@ -1,4 +1,3 @@
-from uvicorn import Config
 from model.server_config import ConfigModel
 from datetime import datetime
 

@@ -1,9 +1,7 @@
-from http.client import HTTPException
 from fastapi import APIRouter, Header, Request
-import uuid
 from dal.contact_us import ContactUsModelDAL
 from model.contact_us import ContactModel
-from lib.email import Emails
+
 
 contactUs_model_dal = ContactUsModelDAL()
 router = APIRouter(

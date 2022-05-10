@@ -1,19 +1,21 @@
-from email.headerregistry import Group
-from starlette.datastructures import MutableHeaders
-import jwt
+import configparser
+import re
 from datetime import datetime
+
+import jwt
 from dateutil import parser
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.datastructures import MutableHeaders
+
 from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
-from routers import server_config, user, meeting, group, contact_us, partner,whitelist,blocklist
-import configparser
-import re
 from model.server_config import ConfigModel
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
+from routers import (blocklist, contact_us, group, meeting, partner,
+                     server_config, user, whitelist)
 
 app = FastAPI()
 user_model_dal = UserModelDAL()

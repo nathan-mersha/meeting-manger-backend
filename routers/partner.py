@@ -1,6 +1,4 @@
-import imp
 from fastapi import APIRouter, Header, Request
-from requests import head
 from dal.partner import PartnerModelDAL
 from dal.user import UserModelDAL
 from model.partner import PartnerModel

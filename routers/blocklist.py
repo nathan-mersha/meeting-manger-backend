@@ -1,11 +1,9 @@
-from http.client import HTTPException
 from fastapi import APIRouter, Header, Request
-import uuid
 from dal.blocklist import BlockListUsModelDAL
-from model.blocklist import BlockListModel
-from lib.email import Emails
+
 
 blockList_model_dal = BlockListUsModelDAL()
+
 
 router = APIRouter(
     prefix="/server/blockList",

@@ -1,18 +1,21 @@
-from fileinput import filename
-from fastapi import APIRouter, UploadFile, File
-import uuid
-import random
-import jwt
-import hashlib
-from datetime import date
 import configparser
-from pydantic import BaseModel, ValidationError
-from lib.email import Emails
+import hashlib
+import random
+import uuid
+from datetime import date
+
+import jwt
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
-from fastapi import HTTPException, Header, Request
+from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
+from lib.email import Emails
 from lib.sms import SMS
-from model.user import LoginModel, UserModel, ForgotPasswordModel, ResetPasswordModel, ChangePasswordModel, UpdateUserModel, SignUpModel, VerifyEmailModel,VerifyPhoneNumberModel, RequestVerificationEmail, RequestVerificationPhoneNumber
+from model.user import (ChangePasswordModel, ForgotPasswordModel, LoginModel,
+                        RequestVerificationEmail,
+                        RequestVerificationPhoneNumber, ResetPasswordModel,
+                        SignUpModel, UpdateUserModel, UserModel,
+                        VerifyEmailModel, VerifyPhoneNumberModel)
+from pydantic import BaseModel, ValidationError
 
 user_model_dal = UserModelDAL()
 hash_256 = hashlib.sha256()
