@@ -28,8 +28,8 @@ class MeetingModelDAL:
         meeting_model.lastModified = str(datetime.now().isoformat())
         return self.collection.insert_one(MeetingModel.to_json(meeting_model))
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
-        data= []
+    def read(self, query={}, limit=24, sort='firstModified', sort_type=pymongo.DESCENDING, page=1):
+        data = []
         offset = (page * limit) - limit
         response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
@@ -37,12 +37,10 @@ class MeetingModelDAL:
             data.append(meeting_model)
         return data
 
-
     def update(self, query, update_data):
         update_data["lastModified"] = str(datetime.now().isoformat())
-        set_update = {"$set": update_data}      
+        set_update = {"$set": update_data}
         return self.collection.update_one(query, set_update)
 
-
-    def delete(self,query):
+    def delete(self, query):
         return self.collection.delete_many(query)

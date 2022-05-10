@@ -1,7 +1,9 @@
 from datetime import datetime
 import enum
+from re import S
 from pydantic import BaseModel
 from typing import Optional
+
 
 
 class MeetingModeModel(str, enum.Enum):
@@ -20,6 +22,7 @@ class MeetingAttendeStatus(str, enum.Enum):
     reject = "reject"    
 
 class MeetingAttendees(BaseModel):
+    
     id: Optional[str] = None
     userId : Optional[str] = None
     email: Optional[str] = None
