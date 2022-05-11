@@ -30,7 +30,7 @@ class UpdateScheduleModel(BaseModel):
         return load
 
 class ScheduleModel(BaseModel):
-    id: Optional[str] = None
+    id: str
     userId: str
     date: datetime
     duration: str
