@@ -3,7 +3,6 @@ from fastapi import APIRouter, Header, Request
 from dal.schedule import ScheduleModelDAL
 from dal.whitelist import WhiteListModelDAL
 from model.schedule import ScheduleModel, UpdateScheduleModel
-from datetime import datetime
 
 schedule_model_dal = ScheduleModelDAL()
 whiteList_model_dal = WhiteListModelDAL()
@@ -15,15 +14,11 @@ router = APIRouter(
 )
 
 @router.post("/create")
-async def create(createSchedules: list[ScheduleModel], request:Request, token:str=Header(None)):
+async def create(createSchedule: ScheduleModel, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
-
-    for schedule in createSchedules:
-        schedule.userId = userId
-        schedule.firstModified = str(datetime.now().isoformat())
-        schedule.lastModified = str(datetime.now().isoformat())
-
-    await schedule_model_dal.create_multiple(createSchedules)
+    createSchedule.userId = userId
+    createSchedule.id = str(uuid.uuid4())
+    await schedule_model_dal.create(createSchedule)
     return {"message" : "successfully created schedule"}
     
 

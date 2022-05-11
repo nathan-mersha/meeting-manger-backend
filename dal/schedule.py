@@ -22,13 +22,10 @@ class ScheduleModelDAL:
         print("Creating group indexes for id")
         self.collection.create_index([('id', pymongo.ASCENDING)])
 
-    async def create(self, schedule_model: ScheduleModel):
-        schedule_model.firstModified = str(datetime.now().isoformat())
-        schedule_model.lastModified = str(datetime.now().isoformat())
-        return self.collection.insert_one(ScheduleModel.to_json(schedule_model))
-
-    async def create_multiple(self, schedule_models: ScheduleModel):
-        return self.collection.insert_many(ScheduleModel.to_json_list(schedule_models)) 
+    async def create(self, group_model: ScheduleModel):
+        group_model.firstModified = str(datetime.now().isoformat())
+        group_model.lastModified = str(datetime.now().isoformat())
+        return self.collection.insert_one(ScheduleModel.to_json(group_model))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
         data= []
