@@ -17,11 +17,11 @@ async def create(createMeeting: ContactModel):
     return {"message" : "message successfully created"} 
 
 @router.get("/find/{status}")
-async def get_meetings_hosted(status:str, request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_messages(status:str, request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
     userId = request.headers["userId"]
     # allow only admins to access this endpoint
-    hosted_query = {"resolved" : True if status == "read" else False}
-    contactUsMessages = contactUs_model_dal.read(hosted_query,page=page,limit=limit, sort=sort)
+    status_query = {"resolved" : True if status == "read" else False}
+    contactUsMessages = contactUs_model_dal.read(status_query,page=page,limit=limit, sort=sort)
     contactUsDatas = ContactModel.to_json_list(contactUsMessages)
     return contactUsDatas
 

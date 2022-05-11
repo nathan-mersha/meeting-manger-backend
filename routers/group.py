@@ -3,9 +3,7 @@ from fastapi import APIRouter, Header, Request
 from dal.group import GroupModelDAL
 from lib.email import Emails
 from lib.shared import SharedFuncs
-
 from model.group import GroupModel, UpdateGroupModel
-
 
 group_model_dal = GroupModelDAL()
 sharedFuncs = SharedFuncs()
@@ -27,7 +25,6 @@ async def create(createGroup: GroupModel, request:Request, token:str=Header(None
     for member in createGroup.members:
         isBlocked = sharedFuncs.isUserBlocked(user_id, member)
         if isBlocked:
-            
             createGroup.members.remove(member)
 
     await group_model_dal.create(createGroup)

@@ -13,7 +13,7 @@ from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from model.server_config import ConfigModel
-from routers import (blocklist, contact_us, group, meeting, partner,
+from routers import (blocklist, schedule, contact_us, group, meeting, partner,
                      server_config, user, whitelist, search)
 
 app = FastAPI()
@@ -38,6 +38,7 @@ app.include_router(partner.router)
 app.include_router(whitelist.router)
 app.include_router(blocklist.router)
 app.include_router(search.router)
+app.include_router(schedule.router)
 
 app.add_middleware(
     CORSMiddleware,

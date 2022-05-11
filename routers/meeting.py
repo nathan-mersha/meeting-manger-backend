@@ -1,5 +1,5 @@
 from http.client import HTTPException
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
@@ -10,7 +10,6 @@ from lib.email import Emails
 
 meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
-emails = Emails()
 sms = SMS()
 sharedFuncs = SharedFuncs()
 
@@ -20,9 +19,8 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
 @router.post("/create")
-async def create(createMeeting: MeetingModel,request:Request, token:str=Header(None)):
+async def create(createMeeting: MeetingModel,request:Request,background_tasks:BackgroundTasks, token:str=Header(None)):
     user_id = request.headers["userId"]
     createMeeting.id = str(uuid.uuid4())
     createMeeting.host = user_id
@@ -64,10 +62,11 @@ async def create(createMeeting: MeetingModel,request:Request, token:str=Header(N
             Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{meetingAttendee}/accept
             No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{meetingAttendee}/reject
         '''
-        Emails.send_email(attendeeUser.email, email_body, email_head)
+        background_tasks.add_task(Emails.send_email, attendeeUser.email, email_body, email_head)
 
         if attendeeUser.phoneNumber != None:
-            sms.send(to=attendeeUser.phoneNumber, message=f"You have been invited to join a meeting from {host_data.firstName}. Check your email for more")
+            sms_message = f"You have been invited to join a meeting from {host_data.firstName}. Check your email for more"
+            background_tasks.add_task(sms.send, attendeeUser.phoneNumber, sms_message)
 
     createMeeting.attendees = MeetingAttendees.to_model_list(editedAttendees)
     meeting_data = await meeting_model_dal.create(meeting_model=createMeeting)
@@ -79,7 +78,7 @@ async def create(createMeeting: MeetingModel,request:Request, token:str=Header(N
     return {"message" : "meeting successfully created"} 
 
 @router.get("/confirm_meeting/{meetingId}/{userId}/{status}")
-async def confirm_meeting(meetingId: str,userId: str, status: str):
+async def confirm_meeting(meetingId: str,userId: str, status: str, background_tasks: BackgroundTasks):
     meetingQuery = {"id" : meetingId}
 
     meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
@@ -87,13 +86,11 @@ async def confirm_meeting(meetingId: str,userId: str, status: str):
         return {"message" : "meeting not found"}
 
     meetingData = meetingDatas[0]
-    
     for attendee in meetingData.attendees:
         if attendee.userId == userId:
             attendee.status = status
             break
    
-
     meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
     meeting_model_dal.update(query=meetingQuery, update_data=meetingUpdateData)
 
@@ -122,8 +119,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: str):
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     '''   
-    Emails.send_email(host_data.email, host_email_body, host_email_head)
-
+    background_tasks.add_task(Emails.send_email,host_data.email, host_email_body, host_email_head)
 
     # send email for attendee
     attendee_email_head = f"You have {status} meeting of {host_data.firstName}"
@@ -135,9 +131,8 @@ async def confirm_meeting(meetingId: str,userId: str, status: str):
             Date : {meetingData.date}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
-    '''   
-    Emails.send_email(attendee_data.email, attendee_email_body, attendee_email_head)
-
+    ''' 
+    background_tasks.add_task(Emails.send_email, attendee_data.email, attendee_email_body, attendee_email_head)
     return {"message" : f"meeting {status}"}
 
 @router.get("/find/mymeetings/hosted")
@@ -157,7 +152,7 @@ async def get_meetings_attendee(request:Request,page:int=1,limit:int= 12,sort="f
     return meetingDatas
 
 @router.put("/update/{meetingId}")
-async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, request:Request, token:str=Header(None)):
+async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, request:Request,background_tasks:BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
     meetingQuery = {"id" : meetingId}
     meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
@@ -185,12 +180,12 @@ async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, reques
         Note : {updateMeeting.note}
         Meeting Link : {updateMeeting.meetingLink}
     '''
-    Emails.send_email(email_recipients,email_body,email_head)
+    background_tasks.add_task(Emails.send_email, email_recipients, email_body, email_head)
     return {"message" : "meeting successfully updated"}
 
 
 @router.put("/update_attendee/{meetingId}")
-async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, request:Request, token:str=Header(None)):
+async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, request:Request,background_tasks:BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
     meetingQuery = {"id" : meetingId}
     meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
@@ -201,7 +196,6 @@ async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, reque
     if meetingData.host != userId:
         return HTTPException(status_code=401,detail="You are not authorized to update this meeting")
 
-    
     removed_attendees = []
     newAttendeeData = []
 
@@ -239,7 +233,7 @@ async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, reque
             Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{meetingData.id}/{attendeeData.id}/accept
             No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{meetingData.id}/{attendeeData.id}/reject
             '''
-            Emails.send_email(attendeeData.email, email_body, email_head)
+            background_tasks.add_task(Emails.send_email, attendeeData.email, email_body, email_head)
 
     new_meeting_update_data = {"attendees" : MeetingAttendees.to_json_list(newAttendeeData)}
     meeting_model_dal.update(query=meetingQuery, update_data=new_meeting_update_data)
@@ -251,12 +245,12 @@ async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, reque
         email_body_removed = f'''
             You have been removed from meeting, {meetingData.title}
         '''
-        Emails.send_email(email_recipients_removed, email_body_removed, email_head_removed)
+        background_tasks.add_task(Emails.send_email, email_recipients_removed, email_body_removed, email_head_removed)
 
     return {"message" : "successfully updated attedees"}
 
 @router.delete("/delete/{meetingId}")
-async def delete_meeting(meetingId : str, request:Request, token:str=Header(None)):
+async def delete_meeting(meetingId : str, request:Request,background_tasks:BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
     meetingQuery = {"id" : meetingId}
     meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
@@ -274,11 +268,12 @@ async def delete_meeting(meetingId : str, request:Request, token:str=Header(None
         emails.append(attendee.email)
             
     # send cancelation email
-    email_head = f"Meeting has been deleted"
-    email_body = f'''
+    cancelation_email_lists = ", ".join(emails)
+    cancelation_email_head = f"Meeting has been deleted"
+    cancelation_email_body = f'''
         The meeting {meetingId} has been deleted by the host
-    '''            
-    Emails.send_email(", ".join(emails), email_body, email_head)
+    '''     
+    background_tasks.add_task(Emails.send_email, cancelation_email_lists, cancelation_email_body, cancelation_email_head)       
     return {"message" : "meeting has been successfully deleted"}
 
 def isAttendeeInTheExistingList(attendee,oldList):

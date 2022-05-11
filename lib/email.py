@@ -2,8 +2,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
 
+
 class Emails():
 
+    @staticmethod
     def send_email(recipients, body, subject):
         try:
             message = MIMEMultipart()

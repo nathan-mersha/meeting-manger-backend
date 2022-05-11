@@ -1,6 +1,6 @@
 
 import uuid
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, BackgroundTasks, Header, Request
 from dal.blocklist import BlockListModelDAL
 from dal.group import GroupModelDAL
 from model.blocklist import BlockListModel
@@ -67,7 +67,7 @@ async def delete_from_meetings(ownerId:str,blockedPersonId:str):
         
 
 @router.post("/create/{blockUserId}")
-async def create(blockUserId: str, request : Request, token:str=Header(None)):
+async def create(blockUserId: str, request : Request, background_tasks : BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
     blockListQuery = {"subject" : userId, "blocked" : blockUserId}
     blockListsData = blockList_model_dal.read(query=blockListQuery, limit=1)
@@ -81,12 +81,12 @@ async def create(blockUserId: str, request : Request, token:str=Header(None)):
         blocked = blockUserId,
     )
 
-    await blockList_model_dal.create(blockListData)
-    
-    await delete_from_whiteList(ownerId=userId,blockedPersonId=blockUserId)
-    await delete_from_partner(ownerId=userId,blockedPersonId=blockUserId)
-    await delete_from_groups(ownerId=userId,blockedPersonId=blockUserId)
-    await delete_from_meetings(ownerId=userId,blockedPersonId=blockUserId)
+    background_tasks.add_task(blockList_model_dal.create, blockListData)
+
+    background_tasks.add_task(delete_from_whiteList, userId, blockUserId)
+    background_tasks.add_task(delete_from_partner, userId, blockUserId)
+    background_tasks.add_task(delete_from_groups, userId, blockUserId)
+    background_tasks.add_task(delete_from_meetings, userId, blockUserId)
     
     return {"message" : "user successfully blocked"}
 

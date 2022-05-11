@@ -4,10 +4,9 @@ import random
 import uuid
 import jwt
 from datetime import date
-
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter, File, Header, HTTPException, Request
+from fastapi import APIRouter, File, Header, HTTPException, Request, BackgroundTasks
 from lib.email import Emails
 from lib.sms import SMS
 from model.user import (ChangePasswordModel, ForgotPasswordModel, LoginModel,
@@ -15,11 +14,11 @@ from model.user import (ChangePasswordModel, ForgotPasswordModel, LoginModel,
                         RequestVerificationPhoneNumber, ResetPasswordModel,
                         SignUpModel, UpdateUserModel, UserModel,
                         VerifyEmailModel, VerifyPhoneNumberModel)
+
 from pydantic import BaseModel, ValidationError
 
 user_model_dal = UserModelDAL()
 hash_256 = hashlib.sha256()
-emails = Emails()
 sms = SMS()
 config = configparser.ConfigParser()
 config.read("./cred/config.ini")
@@ -36,7 +35,7 @@ router = APIRouter(
 
 # user API's
 @router.post("/signup")
-async def sign_up_user(signUpData: SignUpModel):
+async def sign_up_user(signUpData: SignUpModel, background_tasks: BackgroundTasks):
     # checking if user email does not already exists
     user_datas = user_model_dal.read({"email" : signUpData.email})
 
@@ -82,12 +81,14 @@ async def sign_up_user(signUpData: SignUpModel):
     await user_model_dal.create(user_model=user)
     email_body = f"Welcome to Arrange Meeting \n your verification code is {emailVerification}"
     email_head = "This is a welcome email from Arrange Meeting";
-    Emails.send_email(user.email, email_body, email_head)
+    background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
+    # Emails.send_email(user.email, email_body, email_head)
     
     # send verification for phone number
     if user.phoneNumber != None:
         message = f"Your Arrange meeting verification code is : {phoneVerification}"
-        sms.send(to=user.phoneNumber, message=message)
+        # sms.send(to=user.phoneNumber, message=message)
+        background_tasks.add_task(sms.send, user.phoneNumber, message)
         print(f"SMS verification message : {message}")
 
     # remove password
@@ -95,7 +96,7 @@ async def sign_up_user(signUpData: SignUpModel):
     return user.to_json()
 
 @router.post("/verify/email")
-async def verifiy_email(verifyEmail: VerifyEmailModel):
+async def verifiy_email(verifyEmail: VerifyEmailModel, background_tasks: BackgroundTasks):
     user_query = {"email" : verifyEmail.email}
     users =  user_model_dal.read(query=user_query, limit=1)
     if len(users) == 0:
@@ -109,7 +110,7 @@ async def verifiy_email(verifyEmail: VerifyEmailModel):
 
     email_body = "Your email is verified"
     email_head = "Your email is verified"
-    Emails.send_email(user.email, email_body, email_head)
+    background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
     
     # generate token
     after_six_months = date.today() + relativedelta(months=+6)
@@ -126,7 +127,7 @@ async def verifiy_email(verifyEmail: VerifyEmailModel):
         }
 
 @router.post("/verify/phone_number")
-async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):
+async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel, background_tasks: BackgroundTasks):
     user_query = {"phoneNumber" : verifyPhoneNumber.phoneNumber}
     users =  user_model_dal.read(query=user_query, limit=1)
     if len(users) == 0:
@@ -140,11 +141,11 @@ async def verifiy_phoneNumber(verifyPhoneNumber: VerifyPhoneNumberModel):
 
     email_body = "Your phone number is verified"
     email_head = "Your phone number is verified"
-    Emails.send_email(user.email, email_body, email_head)
+    background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
     return {"message" : "user phone number verified"}
 
 @router.post("/request/verification/email")
-async def request_email_verification_code(requestVerificationEmail: RequestVerificationEmail):
+async def request_email_verification_code(requestVerificationEmail: RequestVerificationEmail, background_tasks: BackgroundTasks):
     user_query = {"email" : requestVerificationEmail.email}
     users =  user_model_dal.read(query=user_query, limit=1)
     
@@ -163,11 +164,11 @@ async def request_email_verification_code(requestVerificationEmail: RequestVerif
     
     email_body = f"Your email verification code is {emailVerification}"
     email_head = "Verification Code";
-    Emails.send_email(user.email, email_body, email_head)
+    background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
     return {"message" : "verification code sent via email"}
 
 @router.post("/request/verification/phone_number")
-async def request_phone_number_verification_code(requestVerificationPhoneNumber: RequestVerificationPhoneNumber):
+async def request_phone_number_verification_code(requestVerificationPhoneNumber: RequestVerificationPhoneNumber, background_tasks : BackgroundTasks):
     user_query = {"phoneNumber" : requestVerificationPhoneNumber.phoneNumber}
     users =  user_model_dal.read(query=user_query, limit=1)
     if len(users) == 0:
@@ -184,7 +185,11 @@ async def request_phone_number_verification_code(requestVerificationPhoneNumber:
     # update the user
     user_model_dal.update(query=user_query, update_data=update_data)
     
-    sms.send(to=user.phoneNumber, message=f"Your Arrange verification code is : {phoneNumberVerification}")
+    # sending sms
+    to = user.phoneNumber
+    message = f"Your Arrange verification code is : {phoneNumberVerification}"
+    background_tasks.add_task(sms.send, to, message)
+
     # todo : send twillio sms here
     return {"message" : "verification code sent via phone number"}
 
@@ -231,7 +236,7 @@ async def login_user(loginModel: LoginModel):
     }
 
 @router.post("/forgot_password")
-async def forgot_password(forgotModel: ForgotPasswordModel): 
+async def forgot_password(forgotModel: ForgotPasswordModel, background_tasks: BackgroundTasks): 
     user_email = forgotModel.email
     reset_code = random.randint(111111, 999999)
     user_query = {"email" : user_email}
@@ -244,7 +249,11 @@ async def forgot_password(forgotModel: ForgotPasswordModel):
     update_data = { 'payload': user_payload}
     # update user here
     user_model_dal.update(query=user_query, update_data=update_data)
-    Emails.send_email(user.email, "You have requested reset code", f"Your reset code is : {reset_code}")
+
+    email_body = f"Your reset code is : {reset_code}"
+    email_head = "You have requested reset code"
+    background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
+    
     return {"message" : "your reset code has been sent"}
 
 @router.get("/detail")
@@ -257,7 +266,7 @@ async def get_user_detail(request:Request, token:str=Header(None)):
     return users[0]
 
 @router.post("/reset_password")
-async def reset_password(resetPassword: ResetPasswordModel):
+async def reset_password(resetPassword: ResetPasswordModel, background_tasks: BackgroundTasks):
     # check if the reset code is correct
     user_query = {"email" : resetPassword.email}
     users = user_model_dal.read(query=user_query, limit=1)
@@ -275,11 +284,13 @@ async def reset_password(resetPassword: ResetPasswordModel):
     user_model_dal.update(query=user_query, update_data=update_data) # password successfuly updated and hashed
     
     # send email to user
-    Emails.send_email(user.email, "Your password has been changed", "Your password has been changed, if this is not you then report here.")
+    email_body = "Your password has been changed, if this is not you then report here."
+    email_head = "Your password has been changed"
+    background_tasks.add_task(Emails.send_email, user.email,email_body, email_head)
     return {"message" : "your password has been changed"}
 
 @router.post("/change_password")
-async def change_password(request:Request, changePassword: ChangePasswordModel, token: str = Header(None)):
+async def change_password(request:Request, changePassword: ChangePasswordModel, background_tasks: BackgroundTasks, token: str = Header(None)):
     user_id = request.headers["userId"]    
    
     hashed_incomming_old_password = hashlib.sha256(str(changePassword.old_password).encode('utf-8')).hexdigest()
@@ -297,11 +308,13 @@ async def change_password(request:Request, changePassword: ChangePasswordModel, 
     update_data = {'password' : hashed_new_password}
     user_model_dal.update(query=user_query, update_data=update_data)
 
-    Emails.send_email(user.email, "Your password has been changed", "Your password has been successfully changed")
+    email_body = "Your password has been changed"
+    email_head = "Your password has been successfully changed"
+    background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
     return {"message": "password successfully changed"}
     
 @router.put("/update_profile")
-async def update_profile(request:Request, updateUser: UpdateUserModel, token: str=Header(None)):
+async def update_profile(request:Request, updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
     user_id = request.headers["userId"]    
     user_query = {"id" : user_id}
     users = user_model_dal.read(query=user_query, limit=1)
@@ -318,12 +331,14 @@ async def update_profile(request:Request, updateUser: UpdateUserModel, token: st
         payload["emailVerification"] = emailVerification
         email_body = f"your verification code is {emailVerification}"
         email_title = f"your verificaion code is {emailVerification}"
-        Emails.send_email(updateUser.email, email_body, email_title)
+        background_tasks.add_task(Emails.send_email, updateUser.email, email_body, email_title)
 
     if updateUser.phoneNumber != None and user.phoneNumber != updateUser.phoneNumber: # new email has been updated        
         updatedDataJSON["isPhoneVerified"] = False
         phoneVerification = str(random.randint(111111,999999))
         payload["phoneNumberVerification"] = phoneVerification
+        txt_message = f"Your verification code is : {phoneVerification}"
+        background_tasks.add_task(sms.send, updateUser.phoneNumber, txt_message)
         # todo send verification code via twillio
 
     

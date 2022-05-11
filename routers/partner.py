@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, Request, BackgroundTasks
 from dal.partner import PartnerModelDAL
 from dal.user import UserModelDAL
 from lib.shared import SharedFuncs
@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 @router.post("/create/{partnerId}")
-async def create(partnerId: str, request : Request, token:str=Header(None)):
+async def create(partnerId: str, request : Request,background_tasks: BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
     
     isUserBlocked = sharedFuncs.isUserBlocked(userId, partnerId)
@@ -58,7 +58,7 @@ async def create(partnerId: str, request : Request, token:str=Header(None)):
         https://mmserver.ml/server/partner/respond_as_a_partner/{userId}/{partnerId}
     '''
 
-    Emails.send_email(partnerData.email, email_body, email_head)
+    background_tasks.add_task(partnerData.email, email_body, email_head)
     return {"message" : "partner successfully created"} 
 
 @router.get("/find/i_added")

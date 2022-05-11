@@ -1,5 +1,5 @@
 from http.client import HTTPException
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
 from lib.shared import SharedFuncs
 from model.whitelist import CreateWhiteListModel, WhiteListModel
@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 @router.post("/create")
-async def create(createWhiteList: CreateWhiteListModel,request : Request,  token:str=Header(None)):
+async def create(createWhiteList: CreateWhiteListModel,request : Request,background_tasks:BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
 
     isUserBlocked = sharedFuncs.isUserBlocked(userId, createWhiteList.to)
@@ -69,12 +69,12 @@ async def create(createWhiteList: CreateWhiteListModel,request : Request,  token
         to Accept click here https://mmserver.ml/server/whitelist/request/accept/{whiteListId}
         to Deny click here https://mmserver.ml/server/whitelist/request/deny/{whiteListId}
     '''
-    Emails.send_email(email_recipient, email_body, email_head)
+    background_tasks.add_task(Emails.send_email, email_recipient, email_body, email_head)
     return {"message" : "White list successfully requsted"}
 
 
 @router.get("/request/{status}/{whiteListId}")
-async def respond_to_whitelist_request(status:str,whiteListId:str):
+async def respond_to_whitelist_request(status:str,whiteListId:str, background_tasks:BackgroundTasks):
     whiteListQuery = {"id" : whiteListId}
     whiteListDatas = whiteList_model_dal.read(query=whiteListQuery, limit=1)
     if len(whiteListDatas) == 0:
@@ -102,13 +102,13 @@ async def respond_to_whitelist_request(status:str,whiteListId:str):
     whiteListUpdateData = {"partyBAccepted" : True if status == "accept" else False, "responded" : True}
     whiteList_model_dal.update(query=whiteListQuery, update_data=whiteListUpdateData)
 
-    emailRecipients = partyA.email
+    email_partyA = partyA.email
     emailHead = f'{partyB.firstName} has {"accepted" if status == "accept" else "denied"} your whitelist request'
     emailBody = f'''
         {partyB.firstName} has {"accepted" if status == "accept" else "denied"} your whitelist request
     '''
 
-    Emails.send_email(emailRecipients, emailBody, emailHead)
+    background_tasks.add_task(Emails.send_email, email_partyA, emailHead, emailBody)
     return {"message" : f"Your {status} response was successful"}
     
 @router.get("/find/{status}")
