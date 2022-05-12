@@ -1,3 +1,4 @@
+from typing import List
 import uuid
 from fastapi import APIRouter, Header, Request
 from dal.schedule import ScheduleModelDAL
@@ -15,7 +16,7 @@ router = APIRouter(
 )
 
 @router.post("/create/multiple")
-async def create(createSchedules: list, request:Request, token:str=Header(None)):
+async def create_multiple(createSchedules: List[ScheduleModel], request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
     
     for createSchedule in createSchedules:
