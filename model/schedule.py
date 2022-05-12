@@ -7,6 +7,7 @@ class ScheduleMode(str, enum.Enum):
     inPerson = "inPerson"
     virutal = "virtual"
 
+
 class UpdateScheduleModel(BaseModel):
     date: datetime
     duration: str
