@@ -19,8 +19,8 @@ class ContactUsModelDAL:
         self.collection = db[self.COLLECTION_NAME]
 
     async def create(self, contactUsModel: ContactModel):
-        contactUsModel.firstModified = str(datetime.now().isoformat())
-        contactUsModel.lastModified = str(datetime.now().isoformat())
+        contactUsModel.firstModified = datetime.now()
+        contactUsModel.lastModified = datetime.now()
         return self.collection.insert_one(ContactModel.to_json(contactUsModel))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
@@ -34,7 +34,7 @@ class ContactUsModelDAL:
 
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
 

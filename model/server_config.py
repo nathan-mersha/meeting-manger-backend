@@ -6,8 +6,8 @@ from typing import Optional
 class ConfigModel(BaseModel):
     id: Optional[str] = None
     tokenExpirationInDay: Optional[int] = 60 #default 60 days 
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(config_json):

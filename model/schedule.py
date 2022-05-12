@@ -40,8 +40,8 @@ class ScheduleModel(BaseModel):
     mode: Optional[ScheduleMode] = ScheduleMode.virutal
     repeat: Optional[str] = None
     travelTime: datetime
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(schedule_json):
@@ -62,7 +62,6 @@ class ScheduleModel(BaseModel):
     def to_json(self):
         load = {}
         if self.id != None: load["id"] = self.id
-        
         if self.userId != None: load["userId"] = self.userId
         if self.date != None: load["date"] = self.date
         if self.duration != None: load["duration"] = self.duration
@@ -71,7 +70,6 @@ class ScheduleModel(BaseModel):
         if self.mode != None: load["mode"] = self.mode
         if self.repeat != None: load["repeat"] = self.repeat
         if self.travelTime != None: load["travelTime"] = self.travelTime
-
         if self.firstModified != None: load["firstModified"] = self.firstModified
         if self.lastModified != None: load["lastModified"] = self.lastModified
 

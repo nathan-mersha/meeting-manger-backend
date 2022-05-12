@@ -24,8 +24,8 @@ class PartnerModelDAL:
         self.collection.create_index([('partner', pymongo.ASCENDING)])
 
     async def create(self, partnerModel: PartnerModel):
-        partnerModel.firstModified = str(datetime.now().isoformat())
-        partnerModel.lastModified = str(datetime.now().isoformat())
+        partnerModel.firstModified = datetime.now()
+        partnerModel.lastModified = datetime.now()
         return self.collection.insert_one(PartnerModel.to_json(partnerModel))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
@@ -39,7 +39,7 @@ class PartnerModelDAL:
 
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
 

@@ -20,8 +20,8 @@ class ConfigModelDAL:
         self.collection = db[self.COLLECTION_NAME]
 
     async def create(self, config_model: ConfigModel):
-        config_model.firstModified = str(datetime.now().isoformat())
-        config_model.lastModified = str(datetime.now().isoformat())
+        config_model.firstModified = datetime.now()
+        config_model.lastModified = datetime.now()
         return self.collection.insert_one(ConfigModel.to_json(config_model))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
@@ -34,7 +34,7 @@ class ConfigModelDAL:
         return data
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}
         return self.collection.update_one(query, set_update)
 

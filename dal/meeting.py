@@ -24,8 +24,8 @@ class MeetingModelDAL:
         self.collection.create_index([('host', pymongo.ASCENDING)])
 
     async def create(self, meeting_model: MeetingModel):
-        meeting_model.firstModified = str(datetime.now().isoformat())
-        meeting_model.lastModified = str(datetime.now().isoformat())
+        meeting_model.firstModified = datetime.now()
+        meeting_model.lastModified = datetime.now()
         return self.collection.insert_one(MeetingModel.to_json(meeting_model))
 
     def read(self, query={}, limit=24, sort='firstModified', sort_type=pymongo.DESCENDING, page=1):
@@ -38,7 +38,7 @@ class MeetingModelDAL:
         return data
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}
         return self.collection.update_one(query, set_update)
 

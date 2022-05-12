@@ -19,8 +19,8 @@ class BlockListModelDAL:
         self.collection = db[self.COLLECTION_NAME]
 
     async def create(self, blockListUsModel: BlockListModel):
-        blockListUsModel.firstModified = str(datetime.now().isoformat())
-        blockListUsModel.lastModified = str(datetime.now().isoformat())
+        blockListUsModel.firstModified = datetime.now()
+        blockListUsModel.lastModified = datetime.now()
         return self.collection.insert_one(BlockListModel.to_json(blockListUsModel))
 
     async def create_index(self):
@@ -38,7 +38,7 @@ class BlockListModelDAL:
         return data
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
 

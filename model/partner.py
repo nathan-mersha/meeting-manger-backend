@@ -6,8 +6,8 @@ class PartnerModel(BaseModel):
     id: Optional[str] = None
     subject: str
     partner: str
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(partner_json):

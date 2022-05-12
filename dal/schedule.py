@@ -23,8 +23,8 @@ class ScheduleModelDAL:
         self.collection.create_index([('id', pymongo.ASCENDING)])
 
     async def create(self, group_model: ScheduleModel):
-        group_model.firstModified = str(datetime.now().isoformat())
-        group_model.lastModified = str(datetime.now().isoformat())
+        group_model.firstModified = datetime.now()
+        group_model.lastModified = datetime.now()
         return self.collection.insert_one(ScheduleModel.to_json(group_model))
 
     async def createMultiple(self, scheduleModels: ScheduleModel):
@@ -41,7 +41,7 @@ class ScheduleModelDAL:
 
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
 

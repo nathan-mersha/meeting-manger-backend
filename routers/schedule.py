@@ -23,8 +23,8 @@ async def create_multiple(createSchedules: List[ScheduleModel], request:Request,
         if createSchedule.id == None:
             createSchedule.id = str(uuid.uuid4())
         createSchedule.userId = userId
-        createSchedule.firstModified = str(datetime.now().isoformat())
-        createSchedule.lastModified = str(datetime.now().isoformat())
+        createSchedule.firstModified = datetime.now()
+        createSchedule.lastModified = datetime.now()
 
     await schedule_model_dal.createMultiple(createSchedules)
     return {"message" : "successfully created schedule"}

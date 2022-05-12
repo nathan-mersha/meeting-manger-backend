@@ -21,8 +21,8 @@ class UserModel(BaseModel):
     countryCode: Optional[str] = None
     isAccountDeactivated: Optional[bool] = False
     isAccountLocked: Optional[bool] = False
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @validator('email')
     def email_must_be_valid(cls, v):

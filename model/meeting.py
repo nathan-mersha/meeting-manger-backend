@@ -23,8 +23,8 @@ class MeetingAttendees(BaseModel):
     userId : Optional[str] = None
     email: Optional[str] = None
     status : Optional[MeetingAttendeStatus] = MeetingAttendeStatus.pending
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(meeting_attendees_json):
@@ -79,8 +79,7 @@ class MeetingModel(BaseModel):
     description:Optional[str] = None
     host: str 
     attendees : Optional[list] = []
-    date: Optional[str] = None
-    time : Optional[str] = None
+    date: Optional[datetime] = None
     duration : Optional[str] = None
     mode : MeetingModeModel
     meetingLink : Optional[str] = None
@@ -89,8 +88,8 @@ class MeetingModel(BaseModel):
     reminderNote : Optional[str] = None
     reminderTitle : Optional[str] = None
     remindBefore : Optional[str] = None
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(meeting_json):
@@ -101,7 +100,6 @@ class MeetingModel(BaseModel):
             host=meeting_json["host"],
             attendees=MeetingAttendees.to_model_list(meeting_json["attendees"]),
             date=meeting_json["date"],
-            time=meeting_json["time"],
             duration=meeting_json["duration"],
             mode=meeting_json["mode"],
             meetingLink=meeting_json["meetingLink"],
@@ -131,7 +129,6 @@ class MeetingModel(BaseModel):
         if self.host != None: load["host"] = self.host
         if self.attendees != None: load["attendees"] = MeetingAttendees.to_json_list(self.attendees)
         if self.date != None: load["date"] = self.date
-        if self.time != None: load["time"] = self.time
         if self.duration != None: load["duration"] = self.duration
         if self.mode != None: load["mode"] = self.mode
         if self.meetingLink != None: load["meetingLink"] = self.meetingLink
@@ -151,8 +148,7 @@ class UpdateAttendee(BaseModel):
 class UpdateMeetingModel(BaseModel):
     title:Optional[str] = None
     description:Optional[str] = None
-    date: Optional[str] = None
-    time : Optional[str] = None
+    date: Optional[datetime] = None
     duration : Optional[str] = None
     mode : Optional[MeetingModeModel] = None 
     meetingLink : Optional[str] = None
@@ -167,7 +163,6 @@ class UpdateMeetingModel(BaseModel):
         if self.title != None: load["title"] = self.title
         if self.description != None: load["description"] = self.description
         if self.date != None: load["date"] = self.date
-        if self.time != None: load["time"] = self.time
         if self.duration != None: load["duration"] = self.duration
         if self.mode != None: load["mode"] = self.mode
         if self.meetingLink != None: load["meetingLink"] = self.meetingLink

@@ -8,8 +8,8 @@ class ContactModel(BaseModel):
     body : str 
     sender : Optional[str] = None
     resolved : Optional[bool] = False
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(contact_us_json):

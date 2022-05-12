@@ -26,14 +26,14 @@ async def get_messages(status:str, request:Request,page:int=1,limit:int= 12,sort
     return contactUsDatas
 
 @router.put("/update/{contactUsId}")
-async def update_meeting(updateContact: ContactModel,contactUsId:str, request:Request, token:str=Header(None)):
+async def update_message(updateContact: ContactModel,contactUsId:str, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
     contactUsQuery = {"id" : contactUsId}
     contactUs_model_dal.update(query=contactUsQuery, update_data=updateContact.to_json())
     return {"message" : "message successfully updated"}
 
 @router.delete("/delete/{contactUsId}")
-async def delete_meeting(contactUsId : str, request:Request, token:str=Header(None)):
+async def delete_message(contactUsId : str, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
     # only admins can delete message
     contactUsQuery = {"id" : contactUsId}

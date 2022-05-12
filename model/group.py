@@ -8,8 +8,8 @@ class GroupModel(BaseModel):
     description : Optional[str] = None
     owner: Optional[str] = None
     members: Optional[list] = []
-    firstModified: Optional[str] = str(datetime.now().isoformat())
-    lastModified: Optional[str] = str(datetime.now().isoformat())
+    firstModified: Optional[datetime] = datetime.now()
+    lastModified: Optional[datetime] = datetime.now()
 
     @staticmethod
     def to_model(group_json):

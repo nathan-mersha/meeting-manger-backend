@@ -32,8 +32,8 @@ class UserModelDAL:
              
 
     async def create(self, user_model: UserModel):
-        user_model.firstModified = str(datetime.now().isoformat())
-        user_model.lastModified = str(datetime.now().isoformat())
+        user_model.firstModified = datetime.now()
+        user_model.lastModified = datetime.now()
         return self.collection.insert_one(UserModel.to_json(user_model))
 
     
@@ -48,7 +48,7 @@ class UserModelDAL:
 
 
     def update(self, query = None, update_data = None):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}
         return self.collection.update_one(query, set_update)
 

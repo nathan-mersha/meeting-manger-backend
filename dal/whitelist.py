@@ -26,8 +26,8 @@ class WhiteListModelDAL:
         self.collection.create_index([('partyB', pymongo.ASCENDING), ('partyBAccepted', pymongo.ASCENDING)])
 
     async def create(self, whiteListModel: WhiteListModel):
-        whiteListModel.firstModified = str(datetime.now().isoformat())
-        whiteListModel.lastModified = str(datetime.now().isoformat())
+        whiteListModel.firstModified = datetime.now()
+        whiteListModel.lastModified = datetime.now()
         return self.collection.insert_one(WhiteListModel.to_json(whiteListModel))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
@@ -41,7 +41,7 @@ class WhiteListModelDAL:
 
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
 

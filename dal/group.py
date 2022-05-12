@@ -23,8 +23,8 @@ class GroupModelDAL:
         self.collection.create_index([('id', pymongo.ASCENDING)])
 
     async def create(self, group_model: GroupModel):
-        group_model.firstModified = str(datetime.now().isoformat())
-        group_model.lastModified = str(datetime.now().isoformat())
+        group_model.firstModified = datetime.now()
+        group_model.lastModified = datetime.now()
         return self.collection.insert_one(GroupModel.to_json(group_model))
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
@@ -38,7 +38,7 @@ class GroupModelDAL:
 
 
     def update(self, query, update_data):
-        update_data["lastModified"] = str(datetime.now().isoformat())
+        update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
 
