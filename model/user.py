@@ -1,7 +1,18 @@
-from datetime import datetime
+from datetime import date, datetime
 from pydantic import BaseModel, validator
-from typing import Optional
+from typing import List, Optional
+import enum
 
+class AvailableDays(int, enum.Enum):
+    SUNDAY = 0
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THRUSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+
+    
 class UserModel(BaseModel):
     id: Optional[str] = None
     firstName: Optional[str] = None
@@ -13,6 +24,11 @@ class UserModel(BaseModel):
     gender : Optional[str] = None
     dob : Optional[str] = None
     profilePicture : Optional[str] = None
+
+    availableFrom: Optional[str] = None
+    availableTo: Optional[str] = None
+    workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
+
     password: str
     isEmailVerified:bool
     isPhoneVerified:bool
@@ -43,6 +59,9 @@ class UserModel(BaseModel):
             gender=user_json["gender"] if "gender" in user_json else None,
             dob=user_json["dob"] if "dob" in user_json else None,
             profilePicture=user_json["profilePicture"] if "profilePicture" in user_json else None,
+            availableFrom=user_json["availableFrom"] if "availableFrom" in user_json else None,
+            availableTo=user_json["availableTo"] if "availableTo" in user_json else None,
+            workingDays=user_json["workingDays"] if "workingDays" in user_json else None,
             password=user_json["password"] if "password" in user_json else None,
             isEmailVerified=user_json["isEmailVerified"] if "isEmailVerified" in user_json else None,
             isPhoneVerified=user_json["isPhoneVerified"] if "isPhoneVerified" in user_json else None,
@@ -69,6 +88,11 @@ class UserModel(BaseModel):
         if self.gender != None: load["gender"] = self.gender
         if self.dob != None: load["dob"] = self.dob
         if self.profilePicture != None: load["profilePicture"] = self.profilePicture
+        
+        if self.availableFrom != None: load["availableFrom"] = self.availableFrom    
+        if self.availableTo != None: load["availableTo"] = self.availableTo
+        if self.workingDays != None: load["workingDays"] = self.workingDays
+
         if self.password != None: load["password"] = self.password
         if self.isEmailVerified != None: load["isEmailVerified"] = self.isEmailVerified
         if self.isPhoneVerified != None: load["isPhoneVerified"] = self.isPhoneVerified
@@ -131,7 +155,11 @@ class UpdateUserModel(BaseModel):
     gender: Optional[str] = None
     dob: Optional[str] = None
     profilePicture: Optional[str] = None
-    
+    availableFrom: Optional[str] = None
+    availableTo: Optional[str] = None
+    workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
+    countryCode: Optional[str] = None
+
     def to_json(self):
         load = {}
         if self.firstName != None: load["firstName"] = self.firstName
@@ -143,6 +171,9 @@ class UpdateUserModel(BaseModel):
         if self.gender != None: load["gender"] = self.gender
         if self.dob != None: load["dob"] = self.dob
         if self.profilePicture != None: load["profilePicture"] = self.profilePicture
+        if self.availableFrom != None: load["availableFrom"] = self.availableFrom    
+        if self.availableTo != None: load["availableTo"] = self.availableTo
+        if self.workingDays != None: load["workingDays"] = self.workingDays
         if self.countryCode != None: load["countryCode"] = self.countryCode
         return load
 
