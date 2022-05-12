@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 @router.post("/create/multiple")
-async def create(createSchedules: list[ScheduleModel], request:Request, token:str=Header(None)):
+async def create(createSchedules: list, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
     
     for createSchedule in createSchedules:
