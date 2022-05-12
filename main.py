@@ -13,8 +13,7 @@ from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from model.server_config import ConfigModel
-from routers import (blocklist, schedule, contact_us, group, meeting, partner,
-                     server_config, user, whitelist, search)
+from routers import blocklist, schedule, contact_us, group, meeting, partner, server_config, user, whitelist, search
 
 app = FastAPI()
 user_model_dal = UserModelDAL()
