@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from optparse import Option
 from pydantic import BaseModel, validator
 from typing import List, Optional
 import enum
@@ -29,9 +30,9 @@ class UserModel(BaseModel):
     availableTo: Optional[str] = None
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
 
-    password: str
-    isEmailVerified:bool
-    isPhoneVerified:bool
+    password: Optional[str] = None
+    isEmailVerified:Optional[bool] = False
+    isPhoneVerified:Optional[bool] = False
     payload: Optional[dict] = {}
     planType: Optional[dict] = {}   
     countryCode: Optional[str] = None
