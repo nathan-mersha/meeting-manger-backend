@@ -1,17 +1,24 @@
+import email
 from http.client import HTTPException
+from random import random
+import hashlib
 from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from lib.shared import SharedFuncs
 from lib.sms import SMS
+from model.user import UserModel
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
 from lib.email import Emails
+import phonenumbers
+import random
 
 meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
 sms = SMS()
 sharedFuncs = SharedFuncs()
+hash_256 = hashlib.sha256()
 
 router = APIRouter(
     prefix="/server/meeting",
@@ -32,41 +39,89 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     host_data = user_datas[0]
 
     for meetingAttendee in createMeeting.attendees:
-        attendeeUserQuery = {"id" : meetingAttendee}
-        isUserBlocked = sharedFuncs.isUserBlocked(user_id, meetingAttendee)
+        attendeeUserQuery = {}
+        isUserBlocked = False
+        
+        if "@" in meetingAttendee:
+            attendeeUserQuery = {"email" : meetingAttendee}
+        else:
+            attendeeUserQuery = {"id" : meetingAttendee}    
+            isUserBlocked = sharedFuncs.isUserBlocked(user_id, meetingAttendee)
         
         if isUserBlocked:
             break
 
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
-        if len(attendeeDatas) == 0:
-            break
-        attendeeUser = attendeeDatas[0]
-        ma = MeetingAttendees(
-            id = str(uuid.uuid4()),
-            userId=meetingAttendee,
-            email=attendeeUser.email,
-            status=MeetingAttendeStatus.pending
-        )
-        editedAttendees.append(ma.to_json())
-        # send email
-        email_head = f"Request meeting from {host_data.firstName}"
-        email_body = f'''
+        if len(attendeeDatas) == 0 and "@" in meetingAttendee: # user is here by invitation
+            # user is new
+            # create account for user
+            # get id and append
+            randomPasswordForNewUser = str(random.randint(111111,999999))
+            hashed_password = hashlib.sha256(str(randomPasswordForNewUser).encode('utf-8'))
+            
+            newAttendeeUserId = str(uuid.uuid4())
+            newUserData = UserModel(
+                id = newAttendeeUserId,
+                email = meetingAttendee,
+                password = hashed_password.hexdigest()
+            )
+
+            await user_model_dal.create(newUserData)
+
+            
+            ma = MeetingAttendees(
+                id = str(uuid.uuid4()),
+                userId=newAttendeeUserId,
+                email=meetingAttendee,
+                status=MeetingAttendeStatus.pending
+            )
+            editedAttendees.append(ma.to_json())
+
+            # send email
+            email_head = "You have been invited to attend a meeting"
+            email_body = f'''
+            Hello,
+            You have been invited to attend a meeting by {host_data.firstName}
             Meeting title : {createMeeting.title}
             Meeting description : {createMeeting.description}
             Attendees : {len(createMeeting.attendees)}
             Date : {createMeeting.date}
             Note : {createMeeting.note}
             Meeting Link : {createMeeting.meetingLink}
+            Login Password is : {str(randomPasswordForNewUser)}
             Are you comming ?
-            Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{meetingAttendee}/accept
-            No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{meetingAttendee}/reject
-        '''
-        background_tasks.add_task(Emails.send_email, attendeeUser.email, email_body, email_head)
+            Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/accept
+            No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/reject
+            '''
+            background_tasks.add_task(Emails.send_email,meetingAttendee, email_body, email_head)
+            
+        else:
+            attendeeUser = attendeeDatas[0]
+            ma = MeetingAttendees(
+                id = str(uuid.uuid4()),
+                userId=meetingAttendee,
+                email=attendeeUser.email,
+                status=MeetingAttendeStatus.pending
+            )
+            editedAttendees.append(ma.to_json())
+            # send email
+            email_head = f"Request meeting from {host_data.firstName}"
+            email_body = f'''
+                Meeting title : {createMeeting.title}
+                Meeting description : {createMeeting.description}
+                Attendees : {len(createMeeting.attendees)}
+                Date : {createMeeting.date}
+                Note : {createMeeting.note}
+                Meeting Link : {createMeeting.meetingLink}
+                Are you comming ?
+                Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{attendeeUser.id}/accept
+                No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{attendeeUser.id}/reject
+            '''
+            background_tasks.add_task(Emails.send_email, attendeeUser.email, email_body, email_head)
 
-        if attendeeUser.phoneNumber != None:
-            sms_message = f"You have been invited to join a meeting from {host_data.firstName}. Check your email for more"
-            background_tasks.add_task(sms.send, attendeeUser.phoneNumber, sms_message)
+            if attendeeUser.phoneNumber != None:
+                sms_message = f"You have been invited to join a meeting from {host_data.firstName}. Check your email for more"
+                background_tasks.add_task(sms.send, attendeeUser.phoneNumber, sms_message)
 
     createMeeting.attendees = MeetingAttendees.to_model_list(editedAttendees)
     meeting_data = await meeting_model_dal.create(meeting_model=createMeeting)
@@ -79,6 +134,70 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
 
 @router.get("/confirm_meeting/{meetingId}/{userId}/{status}")
 async def confirm_meeting(meetingId: str,userId: str, status: str, background_tasks: BackgroundTasks):
+    meetingQuery = {"id" : meetingId}
+
+    meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
+    if len(meetingDatas) == 0:
+        return {"message" : "meeting not found"}
+
+    meetingData = meetingDatas[0]
+    for attendee in meetingData.attendees:
+        if attendee.userId == userId:
+            attendee.status = status
+            break
+   
+    meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
+    meeting_model_dal.update(query=meetingQuery, update_data=meetingUpdateData)
+
+    # query host
+    host_query = {"id" : meetingData.host}
+    host_datas = user_model_dal.read(query=host_query, limit=1)
+    if len(host_datas) == 0:
+        return {"message" : f"host not found"}
+    host_data = host_datas[0]
+    
+    # query attendee
+    attendee_query = {"id" : userId}
+    attendee_datas = user_model_dal.read(query=attendee_query, limit=1)
+    if len(attendee_datas) == 0:
+        return {"message" : f"attendee not found"}
+    attendee_data = attendee_datas[0]
+
+    # send email for host
+    host_email_head = f"{attendee_data.firstName} has {status} your invitation"
+    host_email_body = f'''
+        {attendee_data.firstName} has {status} your invitation
+        Meeting title : {meetingData.title}
+            Meeting description : {meetingData.description}
+            Attendees : {len(meetingData.attendees)}
+            Date : {meetingData.date}
+            Note : {meetingData.note}
+            Meeting Link : {meetingData.meetingLink}
+    '''   
+    background_tasks.add_task(Emails.send_email,host_data.email, host_email_body, host_email_head)
+
+    # send email for attendee
+    attendee_email_head = f"You have {status} meeting of {host_data.firstName}"
+    attendee_email_body = f'''
+        You have {status} meeting of {host_data.firstName}
+        Meeting title : {meetingData.title}
+            Meeting description : {meetingData.description}
+            Attendees : {len(meetingData.attendees)}
+            Date : {meetingData.date}
+            Note : {meetingData.note}
+            Meeting Link : {meetingData.meetingLink}
+    ''' 
+    background_tasks.add_task(Emails.send_email, attendee_data.email, attendee_email_body, attendee_email_head)
+    return {"message" : f"meeting {status}"}
+
+@router.get("/confirm_meeting/new_invite/{meetingId}/{userId}/{status}")
+async def confirm_meeting(meetingId: str,userId: str, status: str, background_tasks: BackgroundTasks):
+
+    # if the new invite is clicked then the user has verified it's email address
+    newUserQuery = {"id" : userId}
+    newUserUpdateData = {"isEmailVerified" : True}
+    user_model_dal.update(query=newUserQuery, update_data=newUserUpdateData)
+
     meetingQuery = {"id" : meetingId}
 
     meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)

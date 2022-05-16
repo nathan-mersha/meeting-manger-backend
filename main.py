@@ -69,6 +69,7 @@ async def validate_token(request: Request, call_next):
         "favicon.ico"
     ]
     route = str(request.url).replace(str(request.base_url),"")
+    print(route)
     for exception_route in exceptionRoutes:
         matches = re.findall(exception_route, route)
         if len(matches) > 0:
