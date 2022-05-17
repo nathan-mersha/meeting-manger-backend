@@ -284,6 +284,30 @@ async def confirm_meeting(meetingId: str,userId: str, status: str, background_ta
     background_tasks.add_task(Emails.send_email, attendee_data.email, attendee_email_body, attendee_email_head)
     return {"message" : f"meeting {status}"}
 
+@router.get("/find/mymeetings/all")
+async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",limit:int= 12,sort="firstModified", token:str=Header(None)):
+    userId = request.headers["userId"]
+
+    hosted_query = {"$or" : [
+        {"host" : userId},
+        {"attendees" : {"$elemMatch" : {"userId" : userId}}}
+    ]}
+    hostedMeetings = meeting_model_dal.read(hosted_query,page=page,limit=limit, sort=sort)
+    
+    if populate == "true":
+        for hostedMeeting in hostedMeetings:
+            for attendee in hostedMeeting.attendees:
+                attendee_query = {"id" : attendee.userId}
+                attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
+                if len(attendeeDatas) == 0:
+                    hostedMeeting.attendees.remove(attendee)
+                    break
+                attendeeData = attendeeDatas[0]
+                attendee.userId = attendeeData    
+
+    meetingDatas = MeetingModel.to_json_list(hostedMeetings)
+    return meetingDatas
+
 @router.get("/find/mymeetings/hosted")
 async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",limit:int= 12,sort="firstModified", token:str=Header(None)):
     userId = request.headers["userId"]
