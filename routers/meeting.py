@@ -53,8 +53,16 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
 
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
         print(f"checking if meetinAttendee is phone number : {meetingAttendee}")
-        parsedPhoneNumber = phonenumbers.parse(meetingAttendee)
-        isPhoneNumber = phonenumbers.is_valid_number(parsedPhoneNumber)
+
+        parsedPhoneNumber = None
+        isPhoneNumber = None
+
+        try:
+            parsedPhoneNumber = phonenumbers.parse(meetingAttendee)
+            isPhoneNumber = phonenumbers.is_valid_number(parsedPhoneNumber)
+        except :
+            pass    
+
         print(f"Is phone number : {isPhoneNumber}")
         if len(attendeeDatas) == 0 and "@" in meetingAttendee: # user is new and here by invitation by email
             # user is new
