@@ -52,6 +52,10 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             break
 
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
+        print(f"checking if meetinAttendee is phone number : {meetingAttendee}")
+        parsedPhoneNumber = phonenumbers.parse(meetingAttendee)
+        isPhoneNumber = phonenumbers.is_valid_number(parsedPhoneNumber)
+        print(f"Is phone number : {isPhoneNumber}")
         if len(attendeeDatas) == 0 and "@" in meetingAttendee: # user is new and here by invitation by email
             # user is new
             # create account for user
@@ -94,7 +98,33 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/reject
             '''
             background_tasks.add_task(Emails.send_email,meetingAttendee, email_body, email_head)
+        
+        elif len(attendeeDatas) == 0 and isPhoneNumber:
+            randomPasswordForNewUser = str(random.randint(111111,999999))
+            hashed_password = hashlib.sha256(str(randomPasswordForNewUser).encode('utf-8'))
+            newAttendeeUserId = str(uuid.uuid4())
+            newUserData = UserModel(
+                id = newAttendeeUserId,
+                phoneNumber = meetingAttendee,
+                email="no@email",
+                password = hashed_password.hexdigest()
+            )
+
+            await user_model_dal.create(newUserData)
+
             
+            ma = MeetingAttendees(
+                id = str(uuid.uuid4()),
+                userId=newAttendeeUserId,
+                phoneNumber=meetingAttendee,
+                email="no@email",
+                status=MeetingAttendeStatus.pending
+            )
+            editedAttendees.append(ma.to_json())
+
+            smsMessage = f"Request to join a meeting below link to procceed. https://mmclient.ml/completeProfile/{meetingAttendee} your password is {randomPasswordForNewUser}"
+            print(f"sending sms message is ... {smsMessage}")
+            background_tasks.add_task(sms.send,meetingAttendee, smsMessage)
         else:
             attendeeUser = attendeeDatas[0]
             ma = MeetingAttendees(
@@ -267,6 +297,7 @@ async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",lim
                 attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
                 if len(attendeeDatas) == 0:
                     hostedMeeting.attendees.remove(attendee)
+                    break
                 attendeeData = attendeeDatas[0]
                 attendee.userId = attendeeData    
 

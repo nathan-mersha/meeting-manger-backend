@@ -20,7 +20,7 @@ class UserModel(BaseModel):
     lastName: Optional[str] = None
     companyName : Optional[str] = None
     title : Optional[str] = None
-    email: str
+    email: Optional[str] = None
     phoneNumber: Optional[str] = None
     gender : Optional[str] = None
     dob : Optional[str] = None

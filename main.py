@@ -119,7 +119,7 @@ async def read_root():
 @app.on_event("startup")
 async def startup_event():
     await initialize_config()
-    await create_indexes()
+    # await create_indexes()
 
 def validate_token_and_get_user(token):
     if token == None:
