@@ -8,19 +8,29 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 
+from dal.blocklist import BlockListModelDAL
+from dal.contact_us import ContactUsModelDAL
+
 from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
+from dal.whitelist import WhiteListModelDAL
+from dal.partner import PartnerModelDAL
+from dal.schedule import ScheduleModelDAL
 from model.server_config import ConfigModel
 from routers import blocklist, schedule, contact_us, group, meeting, partner, server_config, user, whitelist, search
 
 app = FastAPI()
+
+blockList_model_dal = BlockListModelDAL()
+partner_model_dal = PartnerModelDAL()
 user_model_dal = UserModelDAL()
 meeting_model_dal = MeetingModelDAL()
 group_model_dal = GroupModelDAL()
-
+white_list_model_dal = WhiteListModelDAL()
 config_model_dal = ConfigModelDAL()
+schedule_model_dal = ScheduleModelDAL()
 
 config = configparser.ConfigParser()
 config.read("./cred/config.ini")
@@ -133,10 +143,14 @@ def validate_token_and_get_user(token):
 
 async def create_indexes():
     print("Creating indexes ...")
-    
-    # await user_model_dal.create_index()
-    # await meeting_model_dal.create_index()
-    # await group_model_dal.create_index()
+
+    await blockList_model_dal.create_index()
+    await group_model_dal.create_index()
+    await meeting_model_dal.create_index()
+    await partner_model_dal.create_index()
+    await schedule_model_dal.create_index()
+    await user_model_dal.create_index()
+    await white_list_model_dal.create_index()
     
 
 async def initialize_config():

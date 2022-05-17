@@ -52,7 +52,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             break
 
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
-        if len(attendeeDatas) == 0 and "@" in meetingAttendee: # user is here by invitation
+        if len(attendeeDatas) == 0 and "@" in meetingAttendee: # user is new and here by invitation by email
             # user is new
             # create account for user
             # get id and append

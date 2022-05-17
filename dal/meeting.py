@@ -20,8 +20,15 @@ class MeetingModelDAL:
 
     async def create_index(self):
         print("Creating meeting indexes for host,id")
-        self.collection.create_index([('id', pymongo.ASCENDING)])
-        self.collection.create_index([('host', pymongo.ASCENDING)])
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
+
+        if "id_1" not in indexKeys:
+            print("creating new index for meeting - id")
+            self.collection.create_index([('id', pymongo.ASCENDING)])
+        if "host_1" not in indexKeys:  
+            print("creating new index for meeting - host")  
+            self.collection.create_index([('host', pymongo.ASCENDING)])
 
     async def create(self, meeting_model: MeetingModel):
         meeting_model.firstModified = datetime.now()

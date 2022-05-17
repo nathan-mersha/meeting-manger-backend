@@ -20,8 +20,21 @@ class PartnerModelDAL:
 
     async def create_index(self):
         print("Creating index for partner")
-        self.collection.create_index([('subject', pymongo.ASCENDING)])
-        self.collection.create_index([('partner', pymongo.ASCENDING)])
+
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
+
+        if "subject_1" not in indexKeys:
+            print("creating new index for partner - subject")
+            self.collection.create_index([('subject', pymongo.ASCENDING)])
+
+        if "partner_1" not in indexKeys:  
+            print("creating new index for partner - partner")  
+            self.collection.create_index([('partner', pymongo.ASCENDING)])
+
+        if "id_1" not in indexKeys:    
+            print("creating new index for partner - id")
+            self.collection.create_index([('id', pymongo.ASCENDING)])
 
     async def create(self, partnerModel: PartnerModel):
         partnerModel.firstModified = datetime.now()

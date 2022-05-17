@@ -20,7 +20,11 @@ class ScheduleModelDAL:
 
     async def create_index(self):
         print("Creating group indexes for id")
-        self.collection.create_index([('id', pymongo.ASCENDING)])
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
+        if "id_1" not in indexKeys:
+            print("creating new index for schedule - id")
+            self.collection.create_index([('id', pymongo.ASCENDING)])
 
     async def create(self, group_model: ScheduleModel):
         group_model.firstModified = datetime.now()

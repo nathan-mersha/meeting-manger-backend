@@ -20,10 +20,23 @@ class WhiteListModelDAL:
 
     async def create_index(self):
         print("Creating index for whiteList")
-        self.collection.create_index([('partyA', pymongo.ASCENDING)])
-        self.collection.create_index([('partyB', pymongo.ASCENDING)])
-        self.collection.create_index([('partyA', pymongo.ASCENDING), ('partyAAccepted', pymongo.ASCENDING)])
-        self.collection.create_index([('partyB', pymongo.ASCENDING), ('partyBAccepted', pymongo.ASCENDING)])
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
+
+        if "partyA_1" not in indexKeys:
+            self.collection.create_index([('partyA', pymongo.ASCENDING)])
+        if "partyB_1" not in indexKeys:    
+            self.collection.create_index([('partyB', pymongo.ASCENDING)])
+        if "partyA_1_partyAAccepted_1" not in indexKeys: 
+            self.collection.create_index([('partyA', pymongo.ASCENDING), ('partyAAccepted', pymongo.ASCENDING)])
+        if "partyB_1_partyBAccepted_1" not in indexKeys:     
+            self.collection.create_index([('partyB', pymongo.ASCENDING), ('partyBAccepted', pymongo.ASCENDING)])
+
+    async def get_indexes(self):
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
+        print(indexKeys)
+        return indexKeys
 
     async def create(self, whiteListModel: WhiteListModel):
         whiteListModel.firstModified = datetime.now()

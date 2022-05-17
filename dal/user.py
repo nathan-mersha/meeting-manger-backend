@@ -1,3 +1,4 @@
+from operator import index
 from model.user import UserModel
 from datetime import datetime
 import configparser
@@ -20,16 +21,21 @@ class UserModelDAL:
 
     async def create_index(self):
         print("Creating user indexes for user model")
-        self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
-        self.collection.create_index([('email', pymongo.ASCENDING)],unique=True)
-        self.collection.create_index([('phoneNumber', pymongo.ASCENDING)])
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
 
-        self.collection.create_index([("firstName", pymongo.TEXT)])
-        self.collection.create_index([("lastName", pymongo.TEXT)])
-        self.collection.create_index([("email", pymongo.TEXT)])
-        self.collection.create_index([("companyName", pymongo.TEXT)])
-        self.collection.create_index([("phoneNumber", pymongo.TEXT)])
-             
+        if "id_1" not in indexKeys:
+            print("creating new index for user - id")
+            self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
+
+        if "email_1" not in indexKeys:    
+            print("creating new index for user - email")
+            self.collection.create_index([('email', pymongo.ASCENDING)],unique=True)
+
+        if "phoneNumber_1" not in indexKeys:
+            print("creating new index for user - phoneNumber")
+            self.collection.create_index([('phoneNumber', pymongo.ASCENDING)])
+                
 
     async def create(self, user_model: UserModel):
         user_model.firstModified = datetime.now()

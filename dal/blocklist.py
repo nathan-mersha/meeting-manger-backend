@@ -25,8 +25,14 @@ class BlockListModelDAL:
 
     async def create_index(self):
         print("Creating index for block list")
-        self.collection.create_index([('subject', pymongo.ASCENDING)])
-        self.collection.create_index([('blocked', pymongo.ASCENDING)])
+        indexInfo = self.collection.index_information() 
+        indexKeys = indexInfo.keys()
+        if "subject_1" not in indexKeys:
+            print("Creating new index for blocklist - subject")
+            self.collection.create_index([('subject', pymongo.ASCENDING)])
+        if "blocked_1" not in indexKeys:    
+            print("Creating new index for blocklist - blocked")
+            self.collection.create_index([('blocked', pymongo.ASCENDING)])
 
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
         data= []

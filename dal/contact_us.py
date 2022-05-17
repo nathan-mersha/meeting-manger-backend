@@ -32,12 +32,10 @@ class ContactUsModelDAL:
             data.append(contactUsModel)
         return data
 
-
     def update(self, query, update_data):
         update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}      
         return self.collection.update_one(query, set_update)
-
 
     def delete(self,query):
         return self.collection.delete_many(query)
