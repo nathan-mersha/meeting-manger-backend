@@ -1,7 +1,7 @@
 from datetime import datetime
 import enum
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 class MeetingModeModel(str, enum.Enum):
     virtual = "virutal"
@@ -144,7 +144,7 @@ class MeetingModel(BaseModel):
         return load
 
 class UpdateAttendee(BaseModel):
-    attendees: Optional[list[MeetingAttendees]] = []
+    attendees: Optional[List[MeetingAttendees]] = []
 
 class UpdateMeetingModel(BaseModel):
     title:Optional[str] = None
