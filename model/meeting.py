@@ -28,6 +28,7 @@ class MeetingAttendees(BaseModel):
 
     @staticmethod
     def to_model(meeting_attendees_json):
+        print(meeting_attendees_json)
         return MeetingAttendees(
             id=meeting_attendees_json["id"],
             userId=meeting_attendees_json["userId"],
@@ -143,7 +144,7 @@ class MeetingModel(BaseModel):
         return load
 
 class UpdateAttendee(BaseModel):
-    attendees: Optional[list] = []
+    attendees: Optional[list[MeetingAttendees]] = []
 
 class UpdateMeetingModel(BaseModel):
     title:Optional[str] = None
