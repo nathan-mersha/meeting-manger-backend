@@ -26,6 +26,16 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+def isMayBePhoneNumber(val):
+    parsedPhoneNumber = None
+    isPhoneNumber = False
+    try:
+        parsedPhoneNumber = phonenumbers.parse(val)
+        isPhoneNumber = phonenumbers.is_valid_number(parsedPhoneNumber)
+    except :
+        return isPhoneNumber
+    return isPhoneNumber
+
 @router.post("/create")
 async def create(createMeeting: MeetingModel,request:Request,background_tasks:BackgroundTasks, token:str=Header(None)):
     user_id = request.headers["userId"]
@@ -52,18 +62,15 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             break
 
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
-        print(f"checking if meetinAttendee is phone number : {meetingAttendee}")
-
         parsedPhoneNumber = None
         isPhoneNumber = None
-
         try:
             parsedPhoneNumber = phonenumbers.parse(meetingAttendee)
             isPhoneNumber = phonenumbers.is_valid_number(parsedPhoneNumber)
         except :
             pass    
 
-        print(f"Is phone number : {isPhoneNumber}")
+        
         if len(attendeeDatas) == 0 and "@" in meetingAttendee: # user is new and here by invitation by email
             # user is new
             # create account for user
@@ -131,7 +138,6 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             editedAttendees.append(ma.to_json())
 
             smsMessage = f"Request to join a meeting below link to procceed. https://mmclient.ml/completeProfile/{meetingAttendee} your password is {randomPasswordForNewUser}"
-            print(f"sending sms message is ... {smsMessage}")
             background_tasks.add_task(sms.send,meetingAttendee, smsMessage)
         else:
             attendeeUser = attendeeDatas[0]
@@ -306,6 +312,11 @@ async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",lim
         for hostedMeeting in hostedMeetings:
             for attendee in hostedMeeting.attendees:
                 attendee_query = {"id" : attendee.userId}
+                if "@" in attendee.userId:
+                    attendee_query = {"email" : attendee.userId}
+                elif  isMayBePhoneNumber(attendee.userId):
+                    attendee_query = {"phoneNumber" : attendee.userId}
+
                 attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
                 if len(attendeeDatas) == 0:
                     hostedMeeting.attendees.remove(attendee)
@@ -326,6 +337,12 @@ async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",lim
         for hostedMeeting in hostedMeetings:
             for attendee in hostedMeeting.attendees:
                 attendee_query = {"id" : attendee.userId}
+
+                if "@" in attendee.userId:
+                    attendee_query = {"email" : attendee.userId}
+                elif  isMayBePhoneNumber(attendee.userId):
+                    attendee_query = {"phoneNumber" : attendee.userId}
+
                 attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
                 if len(attendeeDatas) == 0:
                     hostedMeeting.attendees.remove(attendee)
@@ -346,6 +363,11 @@ async def get_meetings_attendee(request:Request,page:int=1,populate:str="true",l
         for hostedMeeting in hostedMeetings:
             for attendee in hostedMeeting.attendees:
                 attendee_query = {"id" : attendee.userId}
+                if "@" in attendee.userId:
+                    attendee_query = {"email" : attendee.userId}
+                elif  isMayBePhoneNumber(attendee.userId):
+                    attendee_query = {"phoneNumber" : attendee.userId}
+
                 attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
                 if len(attendeeDatas) == 0:
                     hostedMeeting.attendees.remove(attendee)
