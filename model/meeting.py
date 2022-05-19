@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 class MeetingModeModel(str, enum.Enum):
-    virtual = "virutal"
+    virtual = "virtual"
     inPersion = "inPerson"
 
 class MeetingStatus(str,enum.Enum):

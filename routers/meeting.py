@@ -1,3 +1,4 @@
+from datetime import date
 import email
 from http.client import HTTPException
 from random import random
@@ -10,12 +11,16 @@ from lib.shared import SharedFuncs
 from lib.sms import SMS
 from model.user import UserModel
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
+from model.schedule import ScheduleModel
+from dal.schedule import ScheduleModelDAL
 from lib.email import Emails
 import phonenumbers
 import random
 
 meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
+schedule_model_dal = ScheduleModelDAL()
+
 sms = SMS()
 sharedFuncs = SharedFuncs()
 hash_256 = hashlib.sha256()
@@ -114,7 +119,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             '''
             background_tasks.add_task(Emails.send_email,meetingAttendee, email_body, email_head)
         
-        elif len(attendeeDatas) == 0 and isPhoneNumber:
+        elif len(attendeeDatas) == 0 and isPhoneNumber: # user is new and is invited by phonenumber
             randomPasswordForNewUser = str(random.randint(111111,999999))
             hashed_password = hashlib.sha256(str(randomPasswordForNewUser).encode('utf-8'))
             newAttendeeUserId = str(uuid.uuid4())
@@ -143,7 +148,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             attendeeUser = attendeeDatas[0]
             ma = MeetingAttendees(
                 id = str(uuid.uuid4()),
-                userId=meetingAttendee,
+                userId=attendeeUser.id,
                 email=attendeeUser.email,
                 status=MeetingAttendeStatus.pending
             )
@@ -177,18 +182,37 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     return {"message" : "meeting successfully created"} 
 
 @router.get("/confirm_meeting/{meetingId}/{userId}/{status}")
-async def confirm_meeting(meetingId: str,userId: str, status: str, background_tasks: BackgroundTasks):
-    meetingQuery = {"id" : meetingId}
+async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStatus, background_tasks: BackgroundTasks):
+    if status == MeetingAttendeStatus.pending:
+        return {"message" : "meeting status is pending by default"}
 
+    meetingQuery = {"id" : meetingId}
     meetingDatas = meeting_model_dal.read(query=meetingQuery, limit=1)
     if len(meetingDatas) == 0:
         return {"message" : "meeting not found"}
 
     meetingData = meetingDatas[0]
     for attendee in meetingData.attendees:
+        print(f"looping for users : {attendee}")
         if attendee.userId == userId:
             attendee.status = status
-            break
+            print(f"fstatus is : {status}")
+            if status == MeetingAttendeStatus.accept:
+                print("status is accept")
+                # create new schedule for user
+                scheduleData = ScheduleModel(
+                    id = str(uuid.uuid4()),
+                    userId = attendee.userId,
+                    date = meetingData.date,
+                    duration = meetingData.duration,
+                    title = meetingData.title,
+                    note = meetingData.note,
+                    mode = meetingData.mode
+                )
+                print("creating schedule")
+                await schedule_model_dal.create(scheduleData)
+
+                break
    
     meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
     meeting_model_dal.update(query=meetingQuery, update_data=meetingUpdateData)
@@ -235,7 +259,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: str, background_ta
     return {"message" : f"meeting {status}"}
 
 @router.get("/confirm_meeting/new_invite/{meetingId}/{userId}/{status}")
-async def confirm_meeting(meetingId: str,userId: str, status: str, background_tasks: BackgroundTasks):
+async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStatus, background_tasks: BackgroundTasks):
 
     # if the new invite is clicked then the user has verified it's email address
     newUserQuery = {"id" : userId}

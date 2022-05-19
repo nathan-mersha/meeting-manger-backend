@@ -1,11 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-import enum
 
-class ScheduleMode(str, enum.Enum):
-    inPerson = "inPerson"
-    virutal = "virtual"
+from model.meeting import MeetingModeModel
 
 
 class UpdateScheduleModel(BaseModel):
@@ -13,7 +10,7 @@ class UpdateScheduleModel(BaseModel):
     duration: str
     title: str
     note: str
-    mode: Optional[ScheduleMode] = ScheduleMode.virutal
+    mode: Optional[MeetingModeModel] = MeetingModeModel.virtual
     repeat: Optional[str] = None
     travelTime: datetime
 
@@ -34,12 +31,12 @@ class ScheduleModel(BaseModel):
     id: Optional[str] = None
     userId: str
     date: datetime
-    duration: str
-    title: str
-    note: str
-    mode: Optional[ScheduleMode] = ScheduleMode.virutal
+    duration: Optional[str] = None
+    title: Optional[str] = None
+    note: Optional[str] = None
+    mode: Optional[MeetingModeModel] = MeetingModeModel.virtual
     repeat: Optional[str] = None
-    travelTime: datetime
+    travelTime: Optional[datetime] = None
     firstModified: Optional[datetime] = datetime.now()
     lastModified: Optional[datetime] = datetime.now()
 
