@@ -1,5 +1,4 @@
-from datetime import date, datetime
-from optparse import Option
+from datetime import datetime, time
 from pydantic import BaseModel, validator
 from typing import List, Optional
 import enum
@@ -25,11 +24,9 @@ class UserModel(BaseModel):
     gender : Optional[str] = None
     dob : Optional[str] = None
     profilePicture : Optional[str] = None
-
     availableFrom: Optional[str] = None
     availableTo: Optional[str] = None
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
-
     password: Optional[str] = None
     isEmailVerified:Optional[bool] = False
     isPhoneVerified:Optional[bool] = False
@@ -89,11 +86,9 @@ class UserModel(BaseModel):
         if self.gender != None: load["gender"] = self.gender
         if self.dob != None: load["dob"] = self.dob
         if self.profilePicture != None: load["profilePicture"] = self.profilePicture
-        
         if self.availableFrom != None: load["availableFrom"] = self.availableFrom    
         if self.availableTo != None: load["availableTo"] = self.availableTo
         if self.workingDays != None: load["workingDays"] = self.workingDays
-
         if self.password != None: load["password"] = self.password
         if self.isEmailVerified != None: load["isEmailVerified"] = self.isEmailVerified
         if self.isPhoneVerified != None: load["isPhoneVerified"] = self.isPhoneVerified
@@ -156,8 +151,8 @@ class UpdateUserModel(BaseModel):
     gender: Optional[str] = None
     dob: Optional[str] = None
     profilePicture: Optional[str] = None
-    availableFrom: Optional[str] = None
-    availableTo: Optional[str] = None
+    availableFrom: Optional[time] = None
+    availableTo: Optional[time] = None
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
     countryCode: Optional[str] = None
 

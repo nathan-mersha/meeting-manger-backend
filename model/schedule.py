@@ -1,42 +1,43 @@
-from typing import Optional
+from optparse import Option
+from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 
 from model.meeting import MeetingModeModel
 
 
+class RequestAvailableTimeModel(BaseModel):
+    attendees: List[str]
+    fromDate : datetime
+    toDate : datetime
+    duration : str
+
 class UpdateScheduleModel(BaseModel):
-    date: datetime
-    duration: str
-    title: str
-    note: str
+    fromDate: Optional[datetime]
+    toDate: Optional[datetime]
+    title: Optional[str]
+    note: Optional[str]
     mode: Optional[MeetingModeModel] = MeetingModeModel.virtual
-    repeat: Optional[str] = None
-    travelTime: datetime
 
     def to_json(self):
         load = {}
     
-        if self.date != None: load["date"] = self.date
-        if self.duration != None: load["duration"] = self.duration
+        if self.fromDate != None: load["fromDate"] = self.fromDate
+        if self.toDate != None: load["toDate"] = self.toDate
         if self.title != None: load["title"] = self.title
         if self.note != None: load["note"] = self.note
         if self.mode != None: load["mode"] = self.mode
-        if self.repeat != None: load["repeat"] = self.repeat
-        if self.travelTime != None: load["travelTime"] = self.travelTime
 
         return load
 
 class ScheduleModel(BaseModel):
     id: Optional[str] = None
     userId: str
-    date: datetime
-    duration: Optional[str] = None
+    fromDate: datetime
+    toDate:datetime
     title: Optional[str] = None
     note: Optional[str] = None
     mode: Optional[MeetingModeModel] = MeetingModeModel.virtual
-    repeat: Optional[str] = None
-    travelTime: Optional[datetime] = None
     firstModified: Optional[datetime] = datetime.now()
     lastModified: Optional[datetime] = datetime.now()
 
@@ -45,13 +46,11 @@ class ScheduleModel(BaseModel):
         return ScheduleModel(
             id=schedule_json["id"],
             userId=schedule_json["userId"],
-            date=schedule_json["date"],
-            duration=schedule_json["duration"],
+            fromDate=schedule_json["fromDate"],
+            toDate=schedule_json["toDate"],
             title=schedule_json["title"],
             note=schedule_json["note"],
             mode=schedule_json["mode"],
-            repeat=schedule_json["repeat"],
-            travelTime=schedule_json["travelTime"],
             firstModified=schedule_json["firstModified"],
             lastModified=schedule_json["lastModified"],
         )
@@ -60,13 +59,11 @@ class ScheduleModel(BaseModel):
         load = {}
         if self.id != None: load["id"] = self.id
         if self.userId != None: load["userId"] = self.userId
-        if self.date != None: load["date"] = self.date
-        if self.duration != None: load["duration"] = self.duration
+        if self.fromDate != None: load["fromDate"] = self.fromDate
+        if self.toDate != None: load["toDate"] = self.toDate
         if self.title != None: load["title"] = self.title
         if self.note != None: load["note"] = self.note
         if self.mode != None: load["mode"] = self.mode
-        if self.repeat != None: load["repeat"] = self.repeat
-        if self.travelTime != None: load["travelTime"] = self.travelTime
         if self.firstModified != None: load["firstModified"] = self.firstModified
         if self.lastModified != None: load["lastModified"] = self.lastModified
 
