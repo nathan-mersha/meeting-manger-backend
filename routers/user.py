@@ -70,6 +70,7 @@ async def sign_up_user(signUpData: SignUpModel, background_tasks: BackgroundTask
     
     # create user id
     user.id = str(uuid.uuid4())
+    user.planType = "basic"
 
     emailVerification = str(random.randint(111111,999999))
     phoneVerification = str(random.randint(111111,999999))

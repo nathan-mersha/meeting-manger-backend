@@ -31,7 +31,7 @@ class UserModel(BaseModel):
     isEmailVerified:Optional[bool] = False
     isPhoneVerified:Optional[bool] = False
     payload: Optional[dict] = {}
-    planType: Optional[dict] = {}   
+    planType: Optional[str] = "basic"
     countryCode: Optional[str] = None
     isAccountDeactivated: Optional[bool] = False
     isAccountLocked: Optional[bool] = False

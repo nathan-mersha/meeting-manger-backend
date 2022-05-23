@@ -160,9 +160,36 @@ async def initialize_config():
     config_data = config_model_dal.read(query=config_query)
     if len(config_data) == 0:
         print("Config has not yet been created...")
+        pricingPlan = {
+            "basic" : {
+                "name" : "basic",
+                "description" : "basic package",
+                "allowedNoOfActiveMeetings" : 10,
+                "allowedNoOfAttendees" : 3,
+                "monthlyPrice" : 0,
+                "yearlyPrice" : 0
+            },
+            "premium" : {
+                "name" : "premium",
+                "description" : "premium package",
+                "allowedNoOfActiveMeetings" : 100,
+                "allowedNoOfAttendees" : 30,
+                "monthlyPrice" : 10,
+                "yearlyPrice" : 100
+            },
+            "vip" : {
+                "name" : "vip",
+                "description" : "vip package",
+                "allowedNoOfActiveMeetings" : 1000,
+                "allowedNoOfAttendees" : 300,
+                "monthlyPrice" : 100,
+                "yearlyPrice" : 1000
+            }
+        }
         config_model = ConfigModel(
             id=config_id,
-            tokenExpirationInDay=60
+            tokenExpirationInDay=60,
+            pricingPlan = pricingPlan
         )
         await config_model_dal.create(config_model=config_model)
         print("New default server config created")
