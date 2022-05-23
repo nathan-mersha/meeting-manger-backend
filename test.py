@@ -1,38 +1,93 @@
-from datetime import datetime
+
+parties = {
+  "46f136f6-631b-46e9-9dd9-ad4adde6c57e": [
+      {
+        "fromDate": "2022-05-27T15:31:28.270000",
+        "toDate": "2022-05-29T05:10:26.306000+00:00"
+      },
+      {
+        "fromDate": "2022-05-24T15:31:28.270000",
+        "toDate": "2022-05-25T15:31:28.270000"
+      },
+      {
+        "fromDate": "2022-05-01T05:10:26.306000+00:00",
+        "toDate": "2022-05-21T15:31:28.270000"
+      },
+      {
+        "fromDate": "2022-05-22T15:31:28.270000",
+        "toDate": "2022-05-23T15:31:28.270000"
+      }
+    ],
+
+    "46f136f6-631b-46e9-9dd9-ad4adde6c57f": [
+      {
+        "fromDate": "2022-05-27T15:31:28.270000",
+        "toDate": "2022-05-29T05:10:26.306000+00:00"
+      },
+      {
+        "fromDate": "2022-05-24T15:31:28.270000",
+        "toDate": "2022-05-25T15:31:28.270000"
+      },
+    ],
+
+    "46f136f6-631b-46e9-9dd9-ad4adde6c57g": [
+      {
+        "fromDate": "2022-05-01T05:10:26.306000+00:00",
+        "toDate": "2022-05-21T15:31:28.270000"
+      },
+      {
+        "fromDate": "2022-05-24T15:31:28.270000",
+        "toDate": "2022-05-26T15:31:28.270000"
+      }
+    ]
+}
+
+def getIntersectionDates(partyA, partyB):
+    print("getting intersection ... ")
+    print(f"party A : {partyA}")
+    print(f"party B : {partyB}")
+    intersections = []
+    for partyAF in partyA:
+        for partyBF in partyB:
+            if partyAF["fromDate"] >= partyBF["fromDate"] and partyAF["toDate"] <= partyBF["toDate"]: # found my intersection of times
+                print(f"found intersection : {partyAF}")
+                intersections.append(partyAF)
+
+            elif partyBF["fromDate"] >= partyAF["fromDate"] and partyBF["toDate"] <= partyAF["toDate"]: # found my intersection of times
+                print(f"found intersection : {partyBF}")
+                intersections.append(partyBF)
+
+    print(f"intersection result : {intersections}")            
+    return intersections
 
 
-# print(datetime.now().isoformat())
-# print(datetime.now())
+def getAllIntersection(parties):
+    newParties = list(parties.values())
+   
+    # newParties = newParties + parties.values()
 
-dateRange = {"from" : "2022-05-10T11:02:40.705+00:00", "to" : "2022-05-20T11:02:40.705+00:00"}
-schedules = [
-    {"from" : "2022-05-11T11:02:40.705+00:00", "to" : "2022-05-12T11:02:40.705+00:00"},
-    {"from" : "2022-05-13T11:02:40.705+00:00", "to" : "2022-05-14T11:02:40.705+00:00"},
-    {"from" : "2022-05-14T11:02:40.705+00:00", "to" : "2022-05-16T11:02:40.705+00:00"},
-    {"from" : "2022-05-16T11:02:40.705+00:00", "to" : "2022-05-17T11:02:40.705+00:00"},
-]
+    # print(f"init new parties : {len(newParties)}")
+    while len(newParties) > 1:
+        print(f"running..... for len of {newParties}")
+        
+        p1 = newParties[0]
+        p2 = newParties[1]
+     
+        intersectionResults = getIntersectionDates(p1, p2)
+        # print(f"intersection results = {intersectionResults}")
+        # print(f"p1 is : {p1}")
+        newParties.remove(p1)
+        newParties.remove(p2)
 
-availableTimes = [dateRange]
+        print(f"len of intersection results : {len(intersectionResults)}")
+        print(f"len of new parties before append : {len(newParties)}")        
+        newParties.append(intersectionResults)
+        print(f"len of new parties after append : {len(newParties)}")
+        # print(f"new parties after append : {newParties}")
 
-for schedule in schedules:
-    fromDate = datetime.fromisoformat(schedule["from"])
-    toDate = datetime.fromisoformat(schedule["to"])
-    
-    for availableTime in availableTimes:
-        availableTimeFrom = datetime.fromisoformat(availableTime["from"])
-        availableTimeTo = datetime.fromisoformat(availableTime["to"])
-        if fromDate >= availableTimeFrom and toDate <= availableTimeTo:
-            # print(availableTimes)
-            newFreeTimeA = {"from" : availableTimeFrom.isoformat(), "to" : fromDate.isoformat()}
-            newFreeTimeB = {"from" : toDate.isoformat(), "to" : availableTimeTo.isoformat()}
 
-            availableTimes.remove(availableTime) # removing the old time
+    print(f"final intesrsected result : {newParties}")
+    return newParties
 
-            if availableTimeFrom != fromDate:
-                availableTimes.append(newFreeTimeA)
+getAllIntersection(parties)
 
-            if toDate != availableTimeTo:    
-                availableTimes.append(newFreeTimeB)
-            
-
-print(availableTimes)
