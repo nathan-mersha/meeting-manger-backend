@@ -5,10 +5,12 @@ from random import random
 import hashlib
 from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
+from dal.config import ConfigModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
 from lib.shared import SharedFuncs
 from lib.sms import SMS
+from model.server_config import ConfigModel
 from model.user import UserModel
 from model.meeting import MeetingAttendeStatus, MeetingAttendees, MeetingModel, UpdateAttendee, UpdateMeetingModel
 from model.schedule import ScheduleModel
@@ -20,6 +22,7 @@ import random
 meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
 schedule_model_dal = ScheduleModelDAL()
+config_model_dal = ConfigModelDAL()
 
 sms = SMS()
 sharedFuncs = SharedFuncs()
@@ -53,6 +56,13 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
         return HTTPException(status_code=400, detail="host by id not found")
     host_data = user_datas[0]
 
+    #checking pricing plan
+    serverConfig = config_model_dal.read()
+    allowedNoOfAttendeesForHostsPlan = serverConfig.pricingPlan[host_data.planType]["allowedNoOfAttendees"]
+    if allowedNoOfAttendeesForHostsPlan < len(createMeeting.attendees):
+        return {"message" : f"user can only create {allowedNoOfAttendeesForHostsPlan} hosts with {host_data.planType} plan type."}
+
+    
     for meetingAttendee in createMeeting.attendees:
         attendeeUserQuery = {}
         isUserBlocked = False

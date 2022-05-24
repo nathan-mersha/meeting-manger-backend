@@ -11,6 +11,7 @@ class ConfigModelDAL:
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read("./cred/config.ini")
+        self.configId = self.config["secrets"]["config_id"]
 
         # database connection string
         data_base_connection_str = str(self.config['mongodb']['database_url'])
@@ -24,14 +25,10 @@ class ConfigModelDAL:
         config_model.lastModified = datetime.now()
         return self.collection.insert_one(ConfigModel.to_json(config_model))
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
-        data = []
-        offset = (page * limit) - limit
-        response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
-        for document in response:
-            user_model = ConfigModel.to_model(document)
-            data.append(user_model)
-        return data
+    def read(self):
+        query = {"id" : self.configId}
+        response = self.collection.find(query)
+        return ConfigModel.to_model(response[0])
 
     def update(self, query, update_data):
         update_data["lastModified"] = datetime.now()

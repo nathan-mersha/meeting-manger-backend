@@ -51,7 +51,7 @@ app.include_router(schedule.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    # allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -156,8 +156,8 @@ async def create_indexes():
 
 async def initialize_config():
     print("initializing server config")
-    config_query = {"id" : config_id}
-    config_data = config_model_dal.read(query=config_query)
+    
+    config_data = config_model_dal.read()
     if len(config_data) == 0:
         print("Config has not yet been created...")
         pricingPlan = {

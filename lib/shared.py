@@ -1,11 +1,13 @@
 from fastapi import Query
 from dal.blocklist import BlockListModelDAL
-
+import configparser
 
 class SharedFuncs():
     
     def __init__(self) -> None:
         self.block_list_model_dal = BlockListModelDAL()
+        
+
 
     def isUserBlocked(self, subject: str, blocked: str):
         blocked_query = {"$or" : [{"subject" : subject, "blocked" : blocked}, {"subject" : blocked, "blocked" : subject}]}
