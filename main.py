@@ -158,7 +158,7 @@ async def initialize_config():
     print("initializing server config")
     
     config_data = config_model_dal.read()
-    if len(config_data) == 0:
+    if config_data == None:
         print("Config has not yet been created...")
         pricingPlan = {
             "basic" : {
