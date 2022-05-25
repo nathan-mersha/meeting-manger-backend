@@ -4,12 +4,10 @@ from datetime import datetime
 import jwt
 from dateutil import parser
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 
 from dal.blocklist import BlockListModelDAL
-from dal.contact_us import ContactUsModelDAL
 
 from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
