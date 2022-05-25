@@ -24,6 +24,6 @@ async def update_config(request:Request, updateConfig:ConfigModel, token:str=Hea
 
 @router.get("/")
 async def get_config(token:str=Header(None)):
-    configQuery = {"id" : config_id}
-    configData = configModelDal.read(query=configQuery, limit=1)
+
+    configData = configModelDal.read()
     return configData
