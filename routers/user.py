@@ -267,7 +267,7 @@ async def get_user_detail(request:Request, token:str=Header(None)):
     return users[0]
 
 @router.get("/all")
-async def getAllUsers(token:str=Header(None), page:int=1, limit:int=12,sort="firstModified"):
+async def get_all_users(token:str=Header(None), page:int=1, limit:int=12,sort="firstModified"):
     userData = user_model_dal.read(query={}, page=page, limit=limit, sort=sort)
     return userData
 
