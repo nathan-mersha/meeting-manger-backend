@@ -1,4 +1,3 @@
-from turtle import update
 from fastapi import APIRouter, Header, Request
 import configparser
 from dal.config import ConfigModelDAL
