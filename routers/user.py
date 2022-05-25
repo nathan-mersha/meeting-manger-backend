@@ -266,6 +266,11 @@ async def get_user_detail(request:Request, token:str=Header(None)):
         return HTTPException(status_code=404, detail="user not found")
     return users[0]
 
+@router.get("/all")
+async def getAllUsers(token:str=Header(None), page:int=1, limit:int=12,sort="firstModified"):
+    userData = user_model_dal.read(query={}, page=page, limit=limit, sort=sort)
+    return userData
+
 @router.post("/reset_password")
 async def reset_password(resetPassword: ResetPasswordModel, background_tasks: BackgroundTasks):
     # check if the reset code is correct

@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.get("/")
-async def create(token:str=Header(None), query="", page:int=1, limit:int=12,sort="firstModified"):
+async def getUsers(token:str=Header(None), query="", page:int=1, limit:int=12,sort="firstModified"):
     if query == "":
         return {}
     userQuery = {"$text" : {"$search" : query}}
