@@ -273,26 +273,26 @@ async def get_all_users(token:str=Header(None), page:int=1, limit:int=12,sort="f
 
 @router.post("/resetCred")
 async def resetCred(resetPassword: ResetPasswordModel, background_tasks: BackgroundTasks):
-    # check if the reset code is correct
-    user_query = {"email" : resetPassword.email}
-    users = user_model_dal.read(query=user_query, limit=1)
-    if len(users) == 0:
-        return HTTPException(status_code=400, detail="user by email not found")
+    # # check if the reset code is correct
+    # user_query = {"email" : resetPassword.email}
+    # users = user_model_dal.read(query=user_query, limit=1)
+    # if len(users) == 0:
+    #     return HTTPException(status_code=400, detail="user by email not found")
 
-    user = users[0]
-    user_payload = user.payload
+    # user = users[0]
+    # user_payload = user.payload
 
-    if str(user_payload["resetCode"]) != str(resetPassword.reset_code):
-        return HTTPException(status_code=401, detail="reset code is not correct")
+    # if str(user_payload["resetCode"]) != str(resetPassword.reset_code):
+    #     return HTTPException(status_code=401, detail="reset code is not correct")
 
-    new_hashed_password = hashlib.sha256(str(resetPassword.new_password).encode('utf-8')).hexdigest()
-    update_data = {'password' : new_hashed_password}
-    user_model_dal.update(query=user_query, update_data=update_data) # password successfuly updated and hashed
+    # new_hashed_password = hashlib.sha256(str(resetPassword.new_password).encode('utf-8')).hexdigest()
+    # update_data = {'password' : new_hashed_password}
+    # user_model_dal.update(query=user_query, update_data=update_data) # password successfuly updated and hashed
     
-    # send email to user
-    email_body = "Your password has been changed, if this is not you then report here."
-    email_head = "Your password has been changed"
-    background_tasks.add_task(Emails.send_email, user.email,email_body, email_head)
+    # # send email to user
+    # email_body = "Your password has been changed, if this is not you then report here."
+    # email_head = "Your password has been changed"
+    # background_tasks.add_task(Emails.send_email, user.email,email_body, email_head)
     return {"message" : "your password has been changed"}
 
 @router.post("/change_password")
