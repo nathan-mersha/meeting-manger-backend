@@ -271,8 +271,8 @@ async def get_all_users(token:str=Header(None), page:int=1, limit:int=12,sort="f
     userData = user_model_dal.read(query={}, page=page, limit=limit, sort=sort)
     return userData
 
-@router.post("/reset_password")
-async def reset_password(resetPassword: ResetPasswordModel, background_tasks: BackgroundTasks):
+@router.post("/resetCred")
+async def resetCred(resetPassword: ResetPasswordModel, background_tasks: BackgroundTasks):
     # check if the reset code is correct
     user_query = {"email" : resetPassword.email}
     users = user_model_dal.read(query=user_query, limit=1)

@@ -62,7 +62,7 @@ async def validate_token(request: Request, call_next):
         "server/user/signup",
         "server/user/login",
         "server/user/forgot_password",
-        "server/user/reset_password",
+        "server/user/resetCred",
         "server/user/verify/email",
         "server/user/verify/phone_number",
         "server/user/request/verification/email",
