@@ -33,6 +33,8 @@ class UserModel(BaseModel):
     payload: Optional[dict] = {}
     planType: Optional[str] = "basic"
     countryCode: Optional[str] = None
+    country: Optional[str] = None
+    nationalHoliday : Optional[str] = None
     isAccountDeactivated: Optional[bool] = False
     isAccountLocked: Optional[bool] = False
     firstModified: Optional[datetime] = datetime.now()
@@ -66,6 +68,8 @@ class UserModel(BaseModel):
             payload=user_json["payload"] if "payload" in user_json else None,
             planType=user_json["planType"] if "planType" in user_json else None,
             countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
+            country=user_json["country"] if "country" in user_json else None,
+            nationalHoliday=user_json["nationalHoliday"] if "nationalHoliday" in user_json else None,
             isAccountDeactivated=user_json["isAccountDeactivated"] if "isAccountDeactivated" in user_json else None,
             isAccountLocked=user_json["isAccountLocked"] if "isAccountLocked" in user_json else None,
             firstModified=user_json["firstModified"] if "firstModified" in user_json else None,
@@ -95,6 +99,8 @@ class UserModel(BaseModel):
         if self.payload != None: load["payload"] = self.payload
         if self.planType != None: load["planType"] = self.planType
         if self.countryCode != None: load["countryCode"] = self.countryCode
+        if self.country != None: load["country"] = self.country
+        if self.nationalHoliday != None: load["nationalHoliday"] = self.nationalHoliday
         if self.isAccountDeactivated != None: load["isAccountDeactivated"] = self.isAccountDeactivated
         if self.isAccountLocked != None: load["isAccountLocked"] = self.isAccountLocked
         if self.firstModified != None: load["firstModified"] = self.firstModified
@@ -155,6 +161,8 @@ class UpdateUserModel(BaseModel):
     availableTo: Optional[time] = None
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
     countryCode: Optional[str] = None
+    country: Optional[str] = None
+    nationalHoliday: Optional[str] = None
 
     def to_json(self):
         load = {}
@@ -171,6 +179,8 @@ class UpdateUserModel(BaseModel):
         if self.availableTo != None: load["availableTo"] = self.availableTo
         if self.workingDays != None: load["workingDays"] = self.workingDays
         if self.countryCode != None: load["countryCode"] = self.countryCode
+        if self.country != None: load["country"] = self.country
+        if self.nationalHoliday != None: load["nationalHoliday"] = self.nationalHoliday
         return load
 
 

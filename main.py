@@ -62,7 +62,7 @@ async def validate_token(request: Request, call_next):
         "server/user/signup",
         "server/user/login",
         "server/user/forgot_password",
-        "server/user/resetCred",
+        "server/user/reset_password",
         "server/user/verify/email",
         "server/user/verify/phone_number",
         "server/user/request/verification/email",
@@ -79,7 +79,7 @@ async def validate_token(request: Request, call_next):
         "favicon.ico"
     ]
     route = str(request.url).replace(str(request.base_url),"")
-    print(route)
+    
     for exception_route in exceptionRoutes:
         matches = re.findall(exception_route, route)
         if len(matches) > 0:
@@ -108,6 +108,8 @@ async def validate_token(request: Request, call_next):
     new_header = MutableHeaders(request._headers)
     new_header["userId"] = str(user_id)
     request._headers = new_header
+    print("New headers .... ")
+    print(str(request._headers))
     request.scope.update(headers=request.headers.raw)
     response = await call_next(request)
     return response
