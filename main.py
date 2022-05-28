@@ -73,7 +73,6 @@ async def validate_token(request: Request, call_next):
         "server/partner/respond_as_a_partner/*",
         "server/whitelist/request/*",
         "server/schedule/find/available_time",
-        "server/user/all",
         "docs",
         "openapi.json",
         "favicon.ico"
