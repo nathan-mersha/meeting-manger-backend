@@ -52,7 +52,7 @@ class WhiteListModelDAL:
             whiteListModel = WhiteListModel.to_model(document)
             if populate == "true":
                 # party A query
-                partyAQuery = {"partyA" : whiteListModel.partyA}
+                partyAQuery = {"id" : whiteListModel.partyA}
                 partyARes = self.user_model_dal.read(partyAQuery)
                 if len(partyARes) == 0:
                     whiteListModel.partyA = None
@@ -60,7 +60,7 @@ class WhiteListModelDAL:
                     whiteListModel.partyA = partyARes[0]    
 
                 # party B query
-                partyBQuery = {"partyB" : whiteListModel.partyB}
+                partyBQuery = {"id" : whiteListModel.partyB}
                 partyBRes = self.user_model_dal.read(partyBQuery)
                 if len(partyBRes) == 0:
                     whiteListModel.partyB = None
