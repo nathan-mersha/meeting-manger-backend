@@ -1,5 +1,3 @@
-from datetime import date
-import email
 from http.client import HTTPException
 from random import random
 import hashlib
@@ -74,7 +72,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             isUserBlocked = sharedFuncs.isUserBlocked(user_id, meetingAttendee)
         
         if isUserBlocked:
-            break
+            continue
 
         attendeeDatas = user_model_dal.read(query=attendeeUserQuery, limit=1)
         parsedPhoneNumber = None
@@ -119,7 +117,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             Meeting title : {createMeeting.title}
             Meeting description : {createMeeting.description}
             Attendees : {len(createMeeting.attendees)}
-            Date : {createMeeting.date}
+            Date : {createMeeting.fromDate}
             Note : {createMeeting.note}
             Meeting Link : {createMeeting.meetingLink}
             Login Password is : {str(randomPasswordForNewUser)}
@@ -169,7 +167,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
                 Meeting title : {createMeeting.title}
                 Meeting description : {createMeeting.description}
                 Attendees : {len(createMeeting.attendees)}
-                Date : {createMeeting.date}
+                Date : {createMeeting.fromDate}
                 Note : {createMeeting.note}
                 Meeting Link : {createMeeting.meetingLink}
                 Are you comming ?
@@ -213,8 +211,8 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
                 scheduleData = ScheduleModel(
                     id = str(uuid.uuid4()),
                     userId = attendee.userId,
-                    date = meetingData.date,
-                    duration = meetingData.duration,
+                    fromDate = meetingData.fromDate,
+                    toDate = meetingData.toDate,
                     title = meetingData.title,
                     note = meetingData.note,
                     mode = meetingData.mode
@@ -222,7 +220,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
                 print("creating schedule")
                 await schedule_model_dal.create(scheduleData)
 
-                break
+                continue
    
     meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
     meeting_model_dal.update(query=meetingQuery, update_data=meetingUpdateData)
@@ -248,7 +246,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.date}
+            Date : {meetingData.fromDate}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     '''   
@@ -261,7 +259,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.date}
+            Date : {meetingData.fromDate}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     ''' 
@@ -286,7 +284,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
     for attendee in meetingData.attendees:
         if attendee.userId == userId:
             attendee.status = status
-            break
+            continue
    
     meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
     meeting_model_dal.update(query=meetingQuery, update_data=meetingUpdateData)
@@ -312,7 +310,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.date}
+            Date : {meetingData.fromDate}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     '''   
@@ -325,7 +323,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.date}
+            Date : {meetingData.fromDate}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     ''' 
@@ -354,7 +352,7 @@ async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",lim
                 attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
                 if len(attendeeDatas) == 0:
                     hostedMeeting.attendees.remove(attendee)
-                    break
+                    continue
                 attendeeData = attendeeDatas[0]
                 attendee.userId = attendeeData    
 
@@ -380,7 +378,7 @@ async def get_meetings_hosted(request:Request,page:int=1,populate:str="true",lim
                 attendeeDatas = user_model_dal.read(query=attendee_query, limit=1, select={"id" : 1, "firstName" : 1, "lastName" : 1, "companyName" : 1, "title" : 1, "email" : 1, "phoneNumber" : 1, "gender" : 1, "email" : 1, "profilePicture" : 1})
                 if len(attendeeDatas) == 0:
                     hostedMeeting.attendees.remove(attendee)
-                    break
+                    continue
                 attendeeData = attendeeDatas[0]
                 attendee.userId = attendeeData    
 
@@ -436,7 +434,7 @@ async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, reques
         Meeting title : {updateMeeting.title}
         Meeting description : {updateMeeting.description}
        
-        Date : {updateMeeting.date}
+        Date : {updateMeeting.fromDate}
         Note : {updateMeeting.note}
         Meeting Link : {updateMeeting.meetingLink}
     '''
@@ -470,7 +468,7 @@ async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, reque
             attendeeDatas = user_model_dal.read(query=attendeeQuery, limit=1)
 
             if len(attendeeDatas) == 0:
-                break
+                continue
             attendeeData = attendeeDatas[0]
             ma = MeetingAttendees(
                 id = str(uuid.uuid4()),
@@ -485,7 +483,7 @@ async def update_attendee(updateAttendees: UpdateAttendee, meetingId: str, reque
                 Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees No : {len(updateAttendees)}
-            Date : {meetingData.date}
+            Date : {meetingData.fromDate}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
             Are you comming ?

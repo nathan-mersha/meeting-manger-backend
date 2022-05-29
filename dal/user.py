@@ -21,6 +21,7 @@ class UserModelDAL:
 
     async def create_index(self):
         print("Creating user indexes for user model")
+        
         indexInfo = self.collection.index_information() 
         indexKeys = indexInfo.keys()
 
@@ -28,21 +29,14 @@ class UserModelDAL:
             print("creating new index for user - id")
             self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
 
-        if "email_1" not in indexKeys:    
-            print("creating new index for user - email")
-            self.collection.create_index([('email', pymongo.ASCENDING)],unique=True)
-
-        if "phoneNumber_1" not in indexKeys:
-            print("creating new index for user - phoneNumber")
-            self.collection.create_index([('phoneNumber', pymongo.ASCENDING)])
-                
+        if "phoneNumber_text" not in indexKeys:
+            self.collection.create_index([('phoneNumber', 'text'),('email', 'text'),('firstName', 'text')])
 
     async def create(self, user_model: UserModel):
         user_model.firstModified = datetime.now()
         user_model.lastModified = datetime.now()
         return self.collection.insert_one(UserModel.to_json(user_model))
 
-    
     def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1,select={"_id" : 0}):
         data= []
         offset = (page * limit) - limit
@@ -52,12 +46,10 @@ class UserModelDAL:
             data.append(user_model)
         return data
 
-
     def update(self, query = None, update_data = None):
         update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}
         return self.collection.update_one(query, set_update)
-
 
     def delete(self, query = {}):
         return self.collection.delete_many(query)

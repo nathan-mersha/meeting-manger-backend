@@ -80,8 +80,8 @@ class MeetingModel(BaseModel):
     description:Optional[str] = None
     host: str 
     attendees : Optional[list] = []
-    date: Optional[datetime] = None
-    duration : Optional[str] = None
+    fromDate: Optional[datetime] = None
+    toDate : Optional[datetime] = None
     mode : MeetingModeModel
     meetingLink : Optional[str] = None
     status: MeetingStatus
@@ -100,8 +100,8 @@ class MeetingModel(BaseModel):
             description=meeting_json["description"],
             host=meeting_json["host"],
             attendees=MeetingAttendees.to_model_list(meeting_json["attendees"]),
-            date=meeting_json["date"],
-            duration=meeting_json["duration"],
+            fromDate=meeting_json["fromDate"],
+            toDate=meeting_json["toDate"],
             mode=meeting_json["mode"],
             meetingLink=meeting_json["meetingLink"],
             status=meeting_json["status"],
@@ -129,8 +129,8 @@ class MeetingModel(BaseModel):
         if self.description != None: load["description"] = self.description
         if self.host != None: load["host"] = self.host
         if self.attendees != None: load["attendees"] = MeetingAttendees.to_json_list(self.attendees)
-        if self.date != None: load["date"] = self.date
-        if self.duration != None: load["duration"] = self.duration
+        if self.fromDate != None: load["fromDate"] = self.fromDate
+        if self.toDate != None: load["toDate"] = self.toDate
         if self.mode != None: load["mode"] = self.mode
         if self.meetingLink != None: load["meetingLink"] = self.meetingLink
         if self.status != None: load["status"] = self.status
@@ -149,8 +149,8 @@ class UpdateAttendee(BaseModel):
 class UpdateMeetingModel(BaseModel):
     title:Optional[str] = None
     description:Optional[str] = None
-    date: Optional[datetime] = None
-    duration : Optional[str] = None
+    fromDate: Optional[datetime] = None
+    toDate : Optional[datetime] = None
     mode : Optional[MeetingModeModel] = None 
     meetingLink : Optional[str] = None
     status: Optional[MeetingStatus] = None
@@ -163,8 +163,8 @@ class UpdateMeetingModel(BaseModel):
         load = {}
         if self.title != None: load["title"] = self.title
         if self.description != None: load["description"] = self.description
-        if self.date != None: load["date"] = self.date
-        if self.duration != None: load["duration"] = self.duration
+        if self.fromDate != None: load["fromDate"] = self.fromDate
+        if self.toDate != None: load["toDate"] = self.toDate
         if self.mode != None: load["mode"] = self.mode
         if self.meetingLink != None: load["meetingLink"] = self.meetingLink
         if self.status != None: load["status"] = self.status

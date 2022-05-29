@@ -2,7 +2,7 @@ from http.client import HTTPException
 from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
 from lib.shared import SharedFuncs
-from model.whitelist import CreateWhiteListModel, WhiteListModel
+from model.whitelist import CreateWhiteListModel, WhiteListModel, WhitelistStatus
 from lib.email import Emails
 from dal.whitelist import WhiteListModelDAL
 from dal.user import UserModelDAL
@@ -112,16 +112,15 @@ async def respond_to_whitelist_request(status:str,whiteListId:str, background_ta
     return {"message" : f"Your {status} response was successful"}
     
 @router.get("/find/{status}")
-async def get_my_whitelists(status:str, request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_my_whitelists(status:WhitelistStatus, request:Request,page:int=1,limit:int= 12,sort="firstModified",populate="true", token:str=Header(None)):
     userId = request.headers["userId"]
     whiteListQuery = {}
     if status == "accepted":
         whiteListQuery = {"$or" : [{"partyA" : userId}, {"partyB" : userId}], "$and" : [{"partyAAccepted" : True}, {"partyBAccepted" : True}]}
     else:
         whiteListQuery = {"$or" : [{"partyA" : userId}, {"partyB" : userId}], "$or" : [{"partyAAccepted" : False}, {"partyBAccepted" : False}]}    
-    whiteListDatas = whiteList_model_dal.read(query=whiteListQuery, limit=limit, page=page,sort=sort)
+    whiteListDatas = whiteList_model_dal.read(query=whiteListQuery, limit=limit, page=page,sort=sort, populate=populate)
     return whiteListDatas
-
 
 @router.delete("/delete/{whiteListeId}")
 async def delete_whitelist(whiteListId: str,request: Request, token:str=Header(None)):

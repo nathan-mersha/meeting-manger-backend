@@ -2,7 +2,7 @@ from model.whitelist import WhiteListModel
 from datetime import datetime
 import configparser
 import pymongo
-
+from dal.user import UserModelDAL
 
 class WhiteListModelDAL:
     COLLECTION_NAME = "whiteList"
@@ -17,6 +17,7 @@ class WhiteListModelDAL:
         client = pymongo.MongoClient(data_base_connection_str, serverSelectionTimeoutMS=5000)
         db = client[data_base_name]
         self.collection = db[self.COLLECTION_NAME]
+        self.user_model_dal = UserModelDAL()
 
     async def create_index(self):
         print("Creating index for whiteList")
@@ -43,12 +44,29 @@ class WhiteListModelDAL:
         whiteListModel.lastModified = datetime.now()
         return self.collection.insert_one(WhiteListModel.to_json(whiteListModel))
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
+    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1, populate="false"):
         data= []
         offset = (page * limit) - limit
         response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
             whiteListModel = WhiteListModel.to_model(document)
+            if populate == "true":
+                # party A query
+                partyAQuery = {"partyA" : whiteListModel.partyA}
+                partyARes = self.user_model_dal.read(partyAQuery)
+                if len(partyARes) == 0:
+                    whiteListModel.partyA = None
+                else:    
+                    whiteListModel.partyA = partyARes[0]    
+
+                # party B query
+                partyBQuery = {"partyB" : whiteListModel.partyB}
+                partyBRes = self.user_model_dal.read(partyBQuery)
+                if len(partyBRes) == 0:
+                    whiteListModel.partyB = None
+                else:
+                    whiteListModel.partyB = partyBRes[0]  
+
             data.append(whiteListModel)
         return data
 

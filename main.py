@@ -77,7 +77,14 @@ async def validate_token(request: Request, call_next):
             response = await call_next(request)
             return response
 
-    token = request.headers["token"]
+    token = None
+
+    try:
+        token = request.headers["token"]
+    except:
+        return JSONResponse(content={"message" : "no token provided"}, status_code=401,)
+
+    print(f"token is : {token}")
     user_id = validate_token_and_get_user(token)
     if "token" in user_id:
         return JSONResponse(content={"message" : user_id}, status_code=401,)
@@ -109,10 +116,10 @@ async def validate_token(request: Request, call_next):
 async def read_root():
     return {"Message": "This is meeting manager's backend by fast api, go to https://mmserver.ml/docs"}
 
-@app.on_event("startup")
-async def startup_event():
-    await initialize_config()
-    # await create_indexes()
+# @app.on_event("startup")
+# async def startup_event():
+#     await initialize_config()
+#     await create_indexes()
 
 def validate_token_and_get_user(token):
     if token == None:
@@ -136,7 +143,6 @@ def validate_token_and_get_user(token):
 
 async def create_indexes():
     print("Creating indexes ...")
-
     await blockList_model_dal.create_index()
     await group_model_dal.create_index()
     await meeting_model_dal.create_index()
@@ -145,7 +151,6 @@ async def create_indexes():
     await user_model_dal.create_index()
     await white_list_model_dal.create_index()
     
-
 async def initialize_config():
     print("initializing server config")
     

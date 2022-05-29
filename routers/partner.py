@@ -2,8 +2,7 @@ from fastapi import APIRouter, Header, Request, BackgroundTasks
 from dal.partner import PartnerModelDAL
 from dal.user import UserModelDAL
 from lib.shared import SharedFuncs
-from model.partner import PartnerModel
-from lib.email import Emails
+from model.partner import PartnerModel, CreatePartners
 import uuid
 
 partner_model_dal = PartnerModelDAL()
@@ -16,63 +15,74 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/create/{partnerId}")
-async def create(partnerId: str, request : Request,background_tasks: BackgroundTasks, token:str=Header(None)):
+@router.post("/create")
+async def create(partners: CreatePartners, request : Request,background_tasks: BackgroundTasks, token:str=Header(None)):
     userId = request.headers["userId"]
-    
-    isUserBlocked = sharedFuncs.isUserBlocked(userId, partnerId)
-    
-    if isUserBlocked:
-        return {"message" : "you can not add this person as a partner"}
+    creationResponses = {}
+    print(f"len of partners : {len(partners.partners)}")
+    for partnerId in partners.partners:
+        print(f"loping for : {partnerId}")
+        isUserBlocked = sharedFuncs.isUserBlocked(userId, partnerId)
+        
+        if isUserBlocked:
+            creationResponses[partnerId] = "you can not add this person as a partner"
+            continue
 
-    newPartnerQuery = {"id" : partnerId}
-    partnersData = user_model_dal.read(query=newPartnerQuery, limit=1)
-    if len(partnersData) == 0:
-        return {"message" : "user not found"}
-    partnerData = partnersData[0]
+        newPartnerQuery = {"id" : partnerId}
+        partnersData = user_model_dal.read(query=newPartnerQuery, limit=1)
+        if len(partnersData) == 0:
+            creationResponses[partnerId] = "user not found"
+            continue
+            
+        partnerData = partnersData[0]
 
-    subjectQuery = {"id" : userId}
-    subjectsData = user_model_dal.read(query=subjectQuery, limit=1)
-    if len(subjectsData) == 0:
-        return {"message" : "user subject not found"}
+        subjectQuery = {"id" : userId}
+        subjectsData = user_model_dal.read(query=subjectQuery, limit=1)
+        if len(subjectsData) == 0:
+            creationResponses[partnerId] = "user subject not found"
+            continue
 
-    subjectData = subjectsData[0]    
+        subjectData = subjectsData[0]    
 
-    partnerQuery = {"subject" : userId, "partner" : partnerId}
-    partnersData = partner_model_dal.read(query=partnerQuery, limit=1)
-    if len(partnersData) > 0:
-        return {"message" : "user is already a partner"}
+        partnerQuery = {"subject" : userId, "partner" : partnerId}
+        partnersData = partner_model_dal.read(query=partnerQuery, limit=1)
+        if len(partnersData) > 0:
+            creationResponses[partnerId] = "user is already a partner"
+            continue
 
 
-    partnerModel = PartnerModel(
-        id=str(uuid.uuid4()),
-        subject = userId,
-        partner = partnerId
-    )
-    await partner_model_dal.create(partnerModel)
+        partnerModel = PartnerModel(
+            id=str(uuid.uuid4()),
+            subject = userId,
+            partner = partnerId
+        )
+        await partner_model_dal.create(partnerModel)
 
-    email_head = f"{subjectData.firstName} has added you as a partner"
-    email_body = f'''
-        {subjectData.firstName} has added you as a partner
-        if you would like to add this person as a partner click on the link below
-        https://mmserver.ml/server/partner/respond_as_a_partner/{userId}/{partnerId}
-    '''
+        email_head = f"{subjectData.firstName} has added you as a partner"
+        email_body = f'''
+            {subjectData.firstName} has added you as a partner
+            if you would like to add this person as a partner click on the link below
+            https://mmserver.ml/server/partner/respond_as_a_partner/{userId}/{partnerId}
+        '''
 
-    background_tasks.add_task(partnerData.email, email_body, email_head)
-    return {"message" : "partner successfully created"} 
+        background_tasks.add_task(partnerData.email, email_body, email_head)
+        creationResponses[partnerId] = "partner successfully created"
+        
+    return creationResponses
 
 @router.get("/find/i_added")
-async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified",populate="true", token:str=Header(None)):
     userId = request.headers["userId"]
     partnersQuery = {"subject" : userId}
-    partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort)
+    partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort, populate=populate)
+
     return partnersData
 
 @router.get("/find/people_added_me")
-async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified",populate="true", token:str=Header(None)):
     userId = request.headers["userId"]
     partnersQuery = {"partner" : userId}
-    partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort)
+    partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort, populate=populate)
     return partnersData
 
 @router.get("/respond_as_a_partner/{partnerId}/{subjectId}")

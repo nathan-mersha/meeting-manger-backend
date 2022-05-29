@@ -57,7 +57,7 @@ async def delete_from_meetings(ownerId:str,blockedPersonId:str):
         for attendee in attendees:
             if attendee.userId == blockedPersonId:
                 attendees.remove(attendee)
-                break
+                continue
         
         updateQuery = {"id" : meetingData.id}
         updateData = {"attendees" : MeetingAttendees.to_json_list(attendees)}
@@ -92,15 +92,16 @@ async def create(blockUserId: str, request : Request, background_tasks : Backgro
 
     
 @router.get("/find/myblocklists")
-async def get_blockLists(request:Request,page:int=1,limit:int= 12,sort="firstModified", token:str=Header(None)):
+async def get_blockLists(request:Request,page:int=1,limit:int= 12,sort="firstModified",populate="true", token:str=Header(None)):
     userId = request.headers["userId"]
     blockListQuery = {"subject" : userId}
-    blockListDatas = blockList_model_dal.read(query=blockListQuery, limit=limit, page=page, sort=sort)
+    blockListDatas = blockList_model_dal.read(query=blockListQuery, limit=limit, page=page, sort=sort, populate=populate)
     return blockListDatas
 
-@router.delete("/delete/{blockListId}")
-async def delete_meeting(blockListId : str, request:Request, token:str=Header(None)):
+@router.delete("/delete/{blockedUserId}")
+async def delete_meeting(blockedUserId : str, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
-    blockListQuery = {"subject" : userId, "id" : blockListId}
-    blockList_model_dal.delete(blockListQuery)
+    blockListQuery = {"subject" : userId, "blocked" : blockedUserId}
+    delete_response = blockList_model_dal.delete(blockListQuery)
+    print(delete_response)
     return {"message" : "successfully removed blocklist"}

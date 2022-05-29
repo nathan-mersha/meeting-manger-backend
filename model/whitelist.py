@@ -1,12 +1,16 @@
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-
+import enum
 
 class CreateWhiteListModel(BaseModel):
     to: str
     note : Optional[str] = None
     
+class WhitelistStatus(str, enum.Enum):
+        accepted = "accepted"
+        denied = "denied"
+        
 class WhiteListModel(BaseModel):
     id: Optional[str] = None
     partyA: str

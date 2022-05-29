@@ -1,4 +1,6 @@
+from re import sub
 from model.partner import PartnerModel
+from dal.user import UserModelDAL
 from datetime import datetime
 import configparser
 import pymongo
@@ -17,6 +19,7 @@ class PartnerModelDAL:
         client = pymongo.MongoClient(data_base_connection_str, serverSelectionTimeoutMS=5000)
         db = client[data_base_name]
         self.collection = db[self.COLLECTION_NAME]
+        self.user_model_dal = UserModelDAL()
 
     async def create_index(self):
         print("Creating index for partner")
@@ -41,12 +44,29 @@ class PartnerModelDAL:
         partnerModel.lastModified = datetime.now()
         return self.collection.insert_one(PartnerModel.to_json(partnerModel))
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
+    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1, populate="false"):
         data= []
         offset = (page * limit) - limit
         response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
             partnerModel = PartnerModel.to_model(document)
+            if populate == "true":
+                # populate subject
+                userQuery = {"id" : partnerModel.subject}
+                subjectsData = self.user_model_dal.read(query=userQuery, limit=1)
+                if len(subjectsData) == 0:
+                    partnerModel.subject = None
+                else:
+                    partnerModel.subject = subjectsData[0]
+
+                # popualte partner
+                userQuery = {"id" : partnerModel.partner}
+                partnersData = self.user_model_dal.read(query=userQuery, limit=1)
+                if len(partnersData) == 0:
+                    partnerModel.partner = None
+                else:
+                    partnerModel.partner = partnersData[0]        
+
             data.append(partnerModel)
         return data
 

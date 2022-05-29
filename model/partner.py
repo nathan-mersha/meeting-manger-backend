@@ -2,6 +2,11 @@ from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 
+
+class CreatePartners(BaseModel):
+    partners : list
+
+    
 class PartnerModel(BaseModel):
     id: Optional[str] = None
     subject: str

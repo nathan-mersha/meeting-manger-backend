@@ -2,7 +2,7 @@ from model.blocklist import BlockListModel
 from datetime import datetime
 import configparser
 import pymongo
-
+from dal.user import UserModelDAL
 
 class BlockListModelDAL:
     COLLECTION_NAME = "blockList"
@@ -17,6 +17,7 @@ class BlockListModelDAL:
         client = pymongo.MongoClient(data_base_connection_str, serverSelectionTimeoutMS=5000)
         db = client[data_base_name]
         self.collection = db[self.COLLECTION_NAME]
+        self.user_model_dal = UserModelDAL()
 
     async def create(self, blockListUsModel: BlockListModel):
         blockListUsModel.firstModified = datetime.now()
@@ -28,18 +29,34 @@ class BlockListModelDAL:
         indexInfo = self.collection.index_information() 
         indexKeys = indexInfo.keys()
         if "subject_1" not in indexKeys:
-            print("Creating new index for blocklist - subject")
             self.collection.create_index([('subject', pymongo.ASCENDING)])
         if "blocked_1" not in indexKeys:    
-            print("Creating new index for blocklist - blocked")
             self.collection.create_index([('blocked', pymongo.ASCENDING)])
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1):
+    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1, populate="false"):
         data= []
         offset = (page * limit) - limit
         response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
             blockListUsModel = BlockListModel.to_model(document)
+            if populate == "true":
+                # query subject
+                subject_query = {"id" : blockListUsModel.subject}
+                subjectsData  = self.user_model_dal.read(query=subject_query, limit=1)
+                if len(subjectsData) == 0:
+                    blockListUsModel.subject = None
+                else:
+                    blockListUsModel.subject = subjectsData[0]
+
+                #query blocked
+                blocked_query = {"id" : blockListUsModel.blocked}
+                blockedData = self.user_model_dal.read(query=blocked_query, limit=1)
+                if len(blockedData) == 0:
+                    blockListUsModel.blocked = None
+                else:
+                    blockListUsModel.blocked = blockedData[0]
+
+
             data.append(blockListUsModel)
         return data
 
