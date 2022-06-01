@@ -31,11 +31,10 @@ class ConfigModelDAL:
         return ConfigModel.to_model(response[0])
 
     def update(self, query, update_data):
-        print(f"Update data : {update_data}")
-        update_data["lastModified"] = datetime.now()
+        update_data["lastModified"] = str(datetime.now())
         set_update = {"$set": update_data}
-        print(f"set update : {set_update}")
         
+
         return self.collection.update_one(query, set_update)
 
     def delete(self, query = {}):
