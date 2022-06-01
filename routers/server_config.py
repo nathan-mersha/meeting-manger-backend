@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Header, Request
 import configparser
 from dal.config import ConfigModelDAL
@@ -19,7 +20,7 @@ configModelDal = ConfigModelDAL()
 @router.put("/")
 async def update_config(request:Request, updateConfig:ConfigModel, token:str=Header(None)):
     config_query = {"id" : config_id}
-    
+    updateConfig.lastModified = datetime.now()
     configModelDal.update(query=config_query, update_data=updateConfig)
     return {"message" : "config updated"}
 
