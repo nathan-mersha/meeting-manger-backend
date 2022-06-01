@@ -21,7 +21,7 @@ configModelDal = ConfigModelDAL()
 async def update_config(request:Request, updateConfig:ConfigModel, token:str=Header(None)):
     config_query = {"id" : config_id}
     updateConfig.lastModified = datetime.now()
-    configModelDal.update(query=config_query, update_data=updateConfig)
+    configModelDal.update(query=config_query, update_data=updateConfig.to_json())
     return {"message" : "config updated"}
 
 @router.get("/")
