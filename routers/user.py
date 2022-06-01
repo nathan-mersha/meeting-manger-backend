@@ -273,6 +273,7 @@ async def get_all_users(token:str=Header(None), page:int=1, limit:int=12,sort="f
 
 @router.post("/reset_password")
 async def reset_password(resetPassword: ResetPasswordModel, background_tasks: BackgroundTasks):
+    print("reset password ....")
     # check if the reset code is correct
     user_query = {"email" : resetPassword.email}
     users = user_model_dal.read(query=user_query, limit=1)

@@ -47,7 +47,10 @@ class UserModelDAL:
         return data
 
     def update(self, query = None, update_data = None):
-        update_data["lastModified"] = datetime.now()
+        print("update user data ....")
+
+        update_data["lastModified"] = str(datetime.now())
+        
         set_update = {"$set": update_data}
         return self.collection.update_one(query, set_update)
 

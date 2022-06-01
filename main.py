@@ -18,7 +18,6 @@ from dal.partner import PartnerModelDAL
 from dal.schedule import ScheduleModelDAL
 from model.server_config import ConfigModel
 from routers import blocklist, schedule, contact_us, group, meeting, partner, server_config, user, whitelist, search
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -48,13 +47,7 @@ app.include_router(blocklist.router)
 app.include_router(search.router)
 app.include_router(schedule.router)
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+
 
 @app.middleware("http")
 async def validate_token(request: Request, call_next):
