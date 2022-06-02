@@ -139,7 +139,7 @@ async def get_my_whitelist_Request(request: Request, responded: bool = False, pa
     return whiteListDatas
 
 
-@router.delete("/delete/{whiteListeId}")
+@router.delete("/delete/{whiteListId}")
 async def delete_whitelist(whiteListId: str, request: Request, token: str = Header(None)):
     userId = request.headers["userId"]
     whiteListQuery = {"id": whiteListId}
