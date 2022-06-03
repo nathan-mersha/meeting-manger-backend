@@ -188,7 +188,9 @@ async def initialize_config():
         config_model = ConfigModel(
             id=config_id,
             tokenExpirationInDay=60,
-            pricingPlan = pricingPlan
+            pricingPlan = pricingPlan,
+            promoPeriod = 0
+
         )
         await config_model_dal.create(config_model=config_model)
         print("New default server config created")
