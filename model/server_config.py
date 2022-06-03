@@ -8,7 +8,7 @@ class ConfigModel(BaseModel):
     id: Optional[str] = None
     tokenExpirationInDay: Optional[int] = 60 #default 60 days 
     pricingPlan : dict
-    promoPeriod : Optional[int] = 1
+    promoPeriod : Optional[int] = 0
     firstModified: Optional[datetime] = datetime.now()
     lastModified: Optional[datetime] = datetime.now()
 
