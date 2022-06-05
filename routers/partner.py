@@ -77,7 +77,7 @@ async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="fir
     userId = request.headers["userId"]
     partnersQuery = {"subject" : userId}
     partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort, populate=populate)
-
+    newPartnersData = []
     for partnerData in partnersData:
         whiteListQuery = {"$or" : [
             {"partyA" : partnerData.subject, "partyB" : partnerData.partner, "partyAAccepted" : True, "partyBAccepted" : True}, 
@@ -89,8 +89,9 @@ async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="fir
             partnerData.areWhiteList = True
         else:
             partnerData.areWhiteList = False
+        newPartnersData.append(partnerData)
             
-    return partnersData
+    return newPartnersData
 
 @router.get("/find/people_added_me")
 async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified",populate="true", token:str=Header(None)):
