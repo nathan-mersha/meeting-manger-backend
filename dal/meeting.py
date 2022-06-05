@@ -41,8 +41,9 @@ class MeetingModelDAL:
         response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
             meeting_model = MeetingModel.to_model(document)
-            meeting_model.toDate < datetime.now()
-            meeting_model.status = MeetingStatus.ended 
+            
+            if(meeting_model.toDate < datetime.now()):
+                meeting_model.status = MeetingStatus.ended 
             data.append(meeting_model)
         return data
 
