@@ -47,9 +47,12 @@ class MeetingAttendees(BaseModel):
 
     @staticmethod
     def to_json_list(meetings_model):
-        
+        # print(meetings_model)
         toJSONLists = []
         for meeting_model in meetings_model:
+            print("to json begin .... ")
+            print(meeting_model)
+            print("to json end ....")
             toJSONLists.append(meeting_model.to_json())
 
         

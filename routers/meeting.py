@@ -1,4 +1,5 @@
 from http.client import HTTPException
+from pickle import NONE
 from random import random
 import hashlib
 from fastapi import APIRouter, Header, Request, BackgroundTasks
@@ -57,7 +58,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     #checking pricing plan
     serverConfig = config_model_dal.read()
     allowedNoOfAttendeesForHostsPlan = serverConfig.pricingPlan[host_data.planType]["allowedNoOfAttendees"]
-    print(allowedNoOfAttendeesForHostsPlan)
+    
     if int(allowedNoOfAttendeesForHostsPlan) < len(createMeeting.attendees):
         return {"message" : f"user can only create {allowedNoOfAttendeesForHostsPlan} hosts with {host_data.planType} plan type."}
 
@@ -454,31 +455,145 @@ async def update_attendee(action: UpdateAttendeeActions, updateAttendees: Update
 
     for attendee in updateAttendees.attendees:
         attendeeQuery = {}
-        isMayBePhoneNumber = isMayBePhoneNumber(attendee)
+        isPhoneNumber = isMayBePhoneNumber(attendee)
         if "@" in attendee:
             attendeeQuery = {"email" : attendee}
-        elif isMayBePhoneNumber:
+        elif isPhoneNumber:
             attendeeQuery = {"phoneNumber" : attendee}
         else:
             attendeeQuery = {"id" : attendee}
 
         attendeeDatas = user_model_dal.read(query=attendeeQuery, limit=1)
+        print(f"attendee query .... {attendeeQuery}")
+        print(f"len of attendee data : {str(len(attendeeDatas))}")
         if len(attendeeDatas) == 0: # user is new
+            print("user is new dont hav eaccount ...")
             # user cant be blocked, 
             # user cant be removed from meeting either
-            pass
-
-        attendeeData = attendeeDatas[0]
-        
-        if action == UpdateAttendeeActions.add:
-            isUserBlocked = sharedFuncs.isUserBlocked(attendeeData.id, userId)
+            randomPasswordForNewUser = str(random.randint(111111,999999))
+            hashed_password = hashlib.sha256(str(randomPasswordForNewUser).encode('utf-8'))
             
-            if isUserBlocked:
-                updateResponse["attendee"] = "user is blocked"
+            newAttendeeUserId = str(uuid.uuid4())
+
+            newUserData = None
+            if "@" in attendee:
+                newUserData = UserModel(
+                    id = newAttendeeUserId,
+                    email = attendee,
+                    password = hashed_password.hexdigest()
+                )
+            elif isMayBePhoneNumber(attendee):
+                newUserData = UserModel(
+                    id = newAttendeeUserId,
+                    email = "no@email.com",
+                    phoneNumber = attendee,
+                    password = hashed_password.hexdigest()
+                )    
+            else:
+                updateResponse[attendee] = "invite data for new user is neither email nor phone"
                 continue
 
+            await user_model_dal.create(newUserData)
+            ma = MeetingAttendees(
+                id = str(uuid.uuid4()),
+                userId=newAttendeeUserId,
+                email= attendee if "@" in attendee else "no@email.com",
+                status=MeetingAttendeStatus.pending)
+
+            meetingData.attendees.append(ma)
+
+            if "@" in attendee:
+                updateResponse[attendee] = "new user invited by email"
+                # send email
+                email_head = "You have been invited to attend a meeting"
+                email_body = f'''
+                Hello,
+                
+                Meeting title : {meetingData.title}
+                Meeting description : {meetingData.description}
+                Attendees : {len(meetingData.attendees)}
+                Date : {meetingData.fromDate}
+                Note : {meetingData.note}
+                Meeting Link : {meetingData.meetingLink}
+                Login Password is : {str(randomPasswordForNewUser)}
+                Are you comming ?
+                Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{meetingData.id}/{newAttendeeUserId}/accept
+                No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{meetingData.id}/{newAttendeeUserId}/reject
+                '''
+                background_tasks.add_task(Emails.send_email,attendee, email_body, email_head)
+            else:
+                updateResponse[attendee] = "new user invited by phone number"
+                smsMessage = f"You have been invited to a meeting use password : {str(randomPasswordForNewUser)} to login"
+                background_tasks.add_task(sms.send,attendee, smsMessage)
+
+            continue
+
+        attendeeData = attendeeDatas[0]        
+        if action == UpdateAttendeeActions.add:
+            isUserBlocked = sharedFuncs.isUserBlocked(attendeeData.id, userId)
+            if isUserBlocked:
+                updateResponse[attendee] = "user is blocked or user has blocked you"
+                continue
+
+            userAlreadyInMeeting = False
             for attendeesMeeting in meetingData.attendees:
-                pass
+                if attendeesMeeting.userId == attendeeData.id:
+                    userAlreadyInMeeting = True
+
+            if userAlreadyInMeeting:
+                updateResponse[attendee] = "user already in meeting"
+                continue
+
+            ma = MeetingAttendees(
+                id = str(uuid.uuid4()),
+                userId=attendeeData.id,
+                email=attendeeData.email,
+                status=MeetingAttendeStatus.pending
+            )
+            meetingData.attendees.append(ma)
+            updateResponse[attendee] = "user is added"
+            
+            # send email
+            email_head = "You have been invited to attend a meeting"
+            email_body = f'''
+            Hello,
+            
+            Meeting title : {meetingData.title}
+            Meeting description : {meetingData.description}
+            Attendees : {len(meetingData.attendees)}
+            Date : {meetingData.fromDate}
+            Note : {meetingData.note}
+            Meeting Link : {meetingData.meetingLink}
+           
+            Are you comming ?
+            Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{meetingData.id}/{attendeeData.id}/accept
+                No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{meetingData.id}/{attendeeData.id}/reject
+            '''
+            background_tasks.add_task(Emails.send_email,attendeeData.email, email_body, email_head)
+
+        elif action == UpdateAttendeeActions.remove:
+            userAlreadyInMeeting = False
+            for attendeesMeeting in meetingData.attendees:
+                if attendeesMeeting.userId == attendeeData.id:
+                    userAlreadyInMeeting = True
+
+            if not userAlreadyInMeeting:
+                updateResponse[attendee] = "user not in meeting"
+                continue
+
+            for attendeeMeeting in meetingData.attendees:
+                if attendeeMeeting.userId == attendeeData.id:
+                    meetingData.attendees.remove(attendeeMeeting)
+                    updateResponse[attendee] = "user is removed"
+
+    print("updating meeting.......")
+    print(meetingData)
+    meetingDataQuery = {"id" : meetingData.id}
+    meeting_model_dal.update(query=meetingDataQuery, update_data=meetingData)            
+    print("update response again ....")
+    print(updateResponse)
+    return updateResponse
+        
 
 
     
