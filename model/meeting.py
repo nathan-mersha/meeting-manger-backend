@@ -144,8 +144,12 @@ class MeetingModel(BaseModel):
         return load
 
 class UpdateAttendee(BaseModel):
-    attendees: Optional[List[MeetingAttendees]] = []
+    attendees: List[str]
 
+class UpdateAttendeeActions(str, enum.Enum):
+    add = "add"
+    remove = "remove"
+    
 class UpdateMeetingModel(BaseModel):
     title:Optional[str] = None
     description:Optional[str] = None

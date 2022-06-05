@@ -11,6 +11,7 @@ class PartnerModel(BaseModel):
     id: Optional[str] = None
     subject: str
     partner: str
+    areWhiteList : bool = False
     firstModified: Optional[datetime] = datetime.now()
     lastModified: Optional[datetime] = datetime.now()
 
@@ -20,6 +21,7 @@ class PartnerModel(BaseModel):
             id=partner_json["id"],
             subject=partner_json["subject"],
             partner=partner_json["partner"],
+            areWhiteList=partner_json["areWhiteList"],
             firstModified=partner_json["firstModified"],
             lastModified=partner_json["lastModified"],
         ) 
@@ -29,6 +31,7 @@ class PartnerModel(BaseModel):
         if self.id != None: load["id"] = self.id
         if self.subject != None: load["subject"] = self.subject
         if self.partner != None: load["partner"] = self.partner
+        if self.areWhiteList != None: load["areWhiteList"] = self.areWhiteList
         if self.firstModified != None: load["firstModified"] = self.firstModified
         if self.lastModified != None: load["lastModified"] = self.lastModified
 

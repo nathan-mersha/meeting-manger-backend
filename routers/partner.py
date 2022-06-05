@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Header, Request, BackgroundTasks
 from dal.partner import PartnerModelDAL
 from dal.user import UserModelDAL
+from dal.whitelist import WhiteListModelDAL
 from lib.shared import SharedFuncs
 from model.partner import PartnerModel, CreatePartners
 import uuid
 
 partner_model_dal = PartnerModelDAL()
 user_model_dal = UserModelDAL()
+white_list_model_dal = WhiteListModelDAL()
 sharedFuncs = SharedFuncs()
 
 router = APIRouter(
@@ -76,6 +78,18 @@ async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="fir
     partnersQuery = {"subject" : userId}
     partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort, populate=populate)
 
+    for partnerData in partnersData:
+        whiteListQuery = {"$or" : [
+            {"partyA" : partnerData.subject, "partyB" : partnerData.partner, "partyAAccepted" : True, "partyBAccepted" : True}, 
+            {"partyA" : partnerData.partner, "partyB" : partnerData.subject, "partyAAccepted" : True, "partyBAccepted" : True}
+        ]}
+
+        whiteListDatas = white_list_model_dal.read(query=whiteListQuery, limit=1)
+        if len(whiteListDatas) > 0:
+            partnerData.areWhiteList = True
+        else:
+            partnerData.areWhiteList = False
+            
     return partnersData
 
 @router.get("/find/people_added_me")
