@@ -412,6 +412,7 @@ async def update_user(id:str,updateUser: UpdateUserModel,background_tasks:Backgr
 class deactivatedUserModel(BaseModel):
     id : str
     isAccountDeactivated: bool
+
 @router.put("/admin/changeUserAccountStatus")
 async def change_user_account_status(deactivatedUser: deactivatedUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
     user_id = deactivatedUser.id    
@@ -421,10 +422,10 @@ async def change_user_account_status(deactivatedUser: deactivatedUserModel,backg
         return HTTPException(status_code=401, detail="user does not exist")
     updatedDataJSON = deactivatedUser.to_json()
     user_model_dal.update(query=user_query,update_data=updatedDataJSON)
-    if(deactivatedUser.isAccountDeactivated){
-    return {"message" : f"user activated successfully"}
-    }
-    return {"message" : f"user deactivated successfully"}
+    if(deactivatedUser.isAccountDeactivated)
+        return {"message" : "user activated successfully"}
+    
+    return {"message" : "user deactivated successfully"}
 
 
 class DeleteUserModel(BaseModel):
