@@ -76,15 +76,26 @@ async def create(partners: CreatePartners, request : Request,background_tasks: B
 async def get_meetings_hosted(request:Request,page:int=1,limit:int= 12,sort="firstModified",populate="true", token:str=Header(None)):
     userId = request.headers["userId"]
     partnersQuery = {"subject" : userId}
-    partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort, populate=populate)
+    partnersData = partner_model_dal.read(query=partnersQuery,limit=limit, page=page, sort=sort, populate=populate)    
     newPartnersData = []
+
     for partnerData in partnersData:
-        whiteListQuery = {"$or" : [
+        whiteListQuery = {}
+        
+        if populate == "true":
+            whiteListQuery = {"$or" : [
+            {"partyA" : partnerData.subject.id, "partyB" : partnerData.partner.id, "partyAAccepted" : True, "partyBAccepted" : True}, 
+            {"partyA" : partnerData.partner.id, "partyB" : partnerData.subject.id, "partyAAccepted" : True, "partyBAccepted" : True}
+        ]}
+
+        else:
+            whiteListQuery = {"$or" : [
             {"partyA" : partnerData.subject, "partyB" : partnerData.partner, "partyAAccepted" : True, "partyBAccepted" : True}, 
             {"partyA" : partnerData.partner, "partyB" : partnerData.subject, "partyAAccepted" : True, "partyBAccepted" : True}
         ]}
 
-        whiteListDatas = white_list_model_dal.read(query=whiteListQuery, limit=1)
+
+        whiteListDatas =  white_list_model_dal.read(query=whiteListQuery, limit=1)
         if len(whiteListDatas) > 0:
             partnerData.areWhiteList = True
         else:

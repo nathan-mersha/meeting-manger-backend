@@ -53,7 +53,9 @@ class PartnerModelDAL:
             if populate == "true":
                 # populate subject
                 userQuery = {"id" : partnerModel.subject}
+                print(f"user query : {userQuery}")
                 subjectsData = self.user_model_dal.read(query=userQuery, limit=1)
+                print(f"subjects data : {subjectsData}")
                 if len(subjectsData) == 0:
                     partnerModel.subject = None
                 else:

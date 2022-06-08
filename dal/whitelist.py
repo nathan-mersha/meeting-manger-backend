@@ -48,6 +48,7 @@ class WhiteListModelDAL:
         data= []
         offset = (page * limit) - limit
         response = self.collection.find(query).skip(offset).limit(limit).sort(sort, sort_type)
+        
         for document in response:
             whiteListModel = WhiteListModel.to_model(document)
             if populate == "true":
@@ -67,7 +68,9 @@ class WhiteListModelDAL:
                 else:
                     whiteListModel.partyB = partyBRes[0]  
 
+       
             data.append(whiteListModel)
+   
         return data
 
 

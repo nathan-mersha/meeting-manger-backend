@@ -86,7 +86,7 @@ async def validate_token(request: Request, call_next):
     except:
         return JSONResponse(content={"message" : "no token provided"}, status_code=401,)
 
-    print(f"token is : {token}")
+    
     user_id = validate_token_and_get_user(token)
     if "token" in user_id:
         return JSONResponse(content={"message" : user_id}, status_code=401,)
@@ -108,8 +108,6 @@ async def validate_token(request: Request, call_next):
     new_header = MutableHeaders(request._headers)
     new_header["userId"] = str(user_id)
     request._headers = new_header
-    print("New headers .... ")
-    print(str(request._headers))
     request.scope.update(headers=request.headers.raw)
     response = await call_next(request)
     return response

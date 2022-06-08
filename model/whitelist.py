@@ -24,6 +24,7 @@ class WhiteListModel(BaseModel):
 
     @staticmethod
     def to_model(whiteList_json):
+        print("to modell..... ....")
         return WhiteListModel(
             id=whiteList_json["id"],
             partyA=whiteList_json["partyA"],
