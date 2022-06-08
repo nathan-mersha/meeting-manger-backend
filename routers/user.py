@@ -394,6 +394,8 @@ async def create_user(userModel: UserModel,background_tasks: BackgroundTasks,tok
     
     return userModel.to_json()
 
+
+
 @router.put("/admin/update_user/{id}")
 async def update_user(id:str,updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
     user_id = id    
@@ -405,6 +407,25 @@ async def update_user(id:str,updateUser: UpdateUserModel,background_tasks:Backgr
     updatedDataJSON = updateUser.to_json()
     user_model_dal.update(query=user_query,update_data=updatedDataJSON)
     return {"message" : "user successfully updated"}
+
+
+class deactivatedUserModel(BaseModel):
+    id : str
+    isAccountDeactivated: bool
+@router.put("/admin/changeUserAccountStatus")
+async def change_user_account_status(deactivatedUser: deactivatedUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+    user_id = deactivatedUser.id    
+    user_query = {"id" : user_id}
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="user does not exist")
+    updatedDataJSON = deactivatedUser.to_json()
+    user_model_dal.update(query=user_query,update_data=updatedDataJSON)
+    if(deactivatedUser.isAccountDeactivated){
+    return {"message" : f"user activated successfully"}
+    }
+    return {"message" : f"user deactivated successfully"}
+
 
 class DeleteUserModel(BaseModel):
     email : str
