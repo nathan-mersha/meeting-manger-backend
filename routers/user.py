@@ -394,9 +394,9 @@ async def create_user(userModel: UserModel,background_tasks: BackgroundTasks,tok
     
     return userModel.to_json()
 
-@router.put("/admin/update_user")
-async def update_user(updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
-    user_id = updateUser.id    
+@router.put("/admin/update_user/{id}")
+async def update_user(id:str,updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+    user_id = id    
     user_query = {"id" : user_id}
     users = user_model_dal.read(query=user_query, limit=1)
     if len(users) == 0:
