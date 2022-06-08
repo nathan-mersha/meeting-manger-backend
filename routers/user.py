@@ -395,30 +395,14 @@ async def create_user(userModel: UserModel,background_tasks: BackgroundTasks,tok
     return userModel.to_json()
 
 @router.put("/admin/update_user")
-async def update_profile(updateUser: UserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+async def update_user(updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
     user_id = updateUser.id    
     user_query = {"id" : user_id}
     users = user_model_dal.read(query=user_query, limit=1)
     if len(users) == 0:
         return HTTPException(status_code=401, detail="user does not exist")
 
-    user = users[0]
-    user.firstName = updateUser.firstName
-    user.lastName = updateUser.lastName
-    user.email = updateUser.email
-    user.phoneNumber = updateUser.phoneNumber
-    user.companyName = updateUser.companyName
-    user.title = updateUser.title
-    user.phoneNumber = updateUser.phoneNumber
-    user.gender = updateUser.gender
-    user.dob = updateUser.dob
-    user.profilePicture = updateUser.profilePicture
-    user.planType = updateUser.planType
-    user.countryCode = updateUser.countryCode
-    user.country = updateUser.country
-    user.nationalHoliday = updateUser.nationalHoliday  
-    updatedDataJSON = user.to_json()
-
+    updatedDataJSON = updateUser.to_json()
     user_model_dal.update(query=user_query,update_data=updatedDataJSON)
     return {"message" : "user successfully updated"}
 
