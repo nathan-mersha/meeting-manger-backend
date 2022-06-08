@@ -25,7 +25,6 @@ config.read("./cred/config.ini")
 
 token_encrypter_secret = config["secrets"]["token_encrypter_secret"]
 file_upload_path = config["file"]["file_upload_path"]
-# file_upload_path = "C:/Users/nathan/Documents/Workspace/meeting_manager/backend/img_save"
 
 router = APIRouter(
     prefix="/server/user",
@@ -368,10 +367,10 @@ async def upload_file(file: bytes=File(...), token:str=Header(None)):
 
 
 @router.post("/admin/create")
-async def create_user(userModel: UserModel, token: str=Header(None)):
+async def create_user(userModel: UserModel,background_tasks: BackgroundTasks,token: str=Header(None)):
     # checking if user email does not already exists
     user_datas = user_model_dal.read({"email" : userModel.email})
-
+    plan_password=userModel.password
     if len(user_datas) > 0:
         raise HTTPException(status_code=400, detail="user by that email already exists")
 
@@ -389,8 +388,22 @@ async def create_user(userModel: UserModel, token: str=Header(None)):
     userModel.id = str(uuid.uuid4())
     # create user
     await user_model_dal.create(user_model=userModel)
+    email_body = f"Welcome to Arrange Meeting \n your password is {plan_password} please change your password"
+    email_head = "This is a welcome email from Arrange Meeting";
+    background_tasks.add_task(Emails.send_email, userModel.email, email_body, email_head)
+    
     return userModel.to_json()
 
+@router.put("/admin/update_user")
+async def update_user(updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+    user_id = updateUser.id    
+    user_query = {"id" : user_id}
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="user does not exist")
+    updatedDataJSON = updateUser.to_json()
+    user_model_dal.update(query=user_query,update_data=updatedDataJSON)
+    return {"message" : "user successfully updated"}
 
 class DeleteUserModel(BaseModel):
     email : str
