@@ -367,6 +367,29 @@ async def upload_file(file: bytes=File(...), token:str=Header(None)):
 # delete users
 
 
+@router.post("/admin/create")
+async def create_user(userModel: UserModel, token: str=Header(None)):
+    # checking if user email does not already exists
+    user_datas = user_model_dal.read({"email" : userModel.email})
+
+    if len(user_datas) > 0:
+        raise HTTPException(status_code=400, detail="user by that email already exists")
+
+    if userModel.phoneNumber != None:
+        user_phone_query =  {"phoneNumber" : userModel.phoneNumber}
+        user_datas_phone = user_model_dal.read(user_phone_query,limit=1)
+        if len(user_datas_phone) > 0:
+            raise HTTPException(status_code=400, detail="user by that phone number already exists") 
+
+    # hash user password
+    hashed_password = hashlib.sha256(str(userModel.password).encode('utf-8'))
+    userModel.password = hashed_password.hexdigest()
+    
+    # create user id
+    userModel.id = str(uuid.uuid4())
+    # create user
+    await user_model_dal.create(user_model=userModel)
+    return userModel.to_json()
 
 
 class DeleteUserModel(BaseModel):
