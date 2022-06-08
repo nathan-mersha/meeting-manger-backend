@@ -412,7 +412,11 @@ async def update_user(id:str,updateUser: UpdateUserModel,background_tasks:Backgr
 class deactivatedUserModel(BaseModel):
     id : str
     isAccountDeactivated: bool
-
+    def to_json(self):
+        load = {}
+        if self.id != None: load["id"] = self.id
+        if self.isAccountDeactivated != None: load["isAccountDeactivated"] = self.isAccountDeactivated
+        return load
 @router.put("/admin/changeUserAccountStatus")
 async def change_user_account_status(deactivatedUser: deactivatedUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
     user_id = deactivatedUser.id    
