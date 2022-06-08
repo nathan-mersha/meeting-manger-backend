@@ -422,7 +422,7 @@ async def change_user_account_status(deactivatedUser: deactivatedUserModel,backg
         return HTTPException(status_code=401, detail="user does not exist")
     updatedDataJSON = deactivatedUser.to_json()
     user_model_dal.update(query=user_query,update_data=updatedDataJSON)
-    if(deactivatedUser.isAccountDeactivated)
+    if(deactivatedUser.isAccountDeactivated):
         return {"message" : "user activated successfully"}
     
     return {"message" : "user deactivated successfully"}
