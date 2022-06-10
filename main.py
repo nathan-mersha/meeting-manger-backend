@@ -1,14 +1,15 @@
 import configparser
+import json
 import re
 from datetime import datetime
 import jwt
 from dateutil import parser
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Header, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 
 from dal.blocklist import BlockListModelDAL
-
+from lib.notifier import ConnectionManager
 from dal.config import ConfigModelDAL
 from dal.group import GroupModelDAL
 from dal.meeting import MeetingModelDAL
@@ -16,14 +17,20 @@ from dal.user import UserModelDAL
 from dal.whitelist import WhiteListModelDAL
 from dal.partner import PartnerModelDAL
 from dal.schedule import ScheduleModelDAL
+from dal.notification import NotificationModelDAL
 from model.server_config import ConfigModel
+
 from routers import blocklist, schedule, contact_us, group, meeting, partner, server_config, user, whitelist, search
 
 app = FastAPI()
+# web socket notifier
+connectionManager = ConnectionManager()
 
 blockList_model_dal = BlockListModelDAL()
 partner_model_dal = PartnerModelDAL()
 user_model_dal = UserModelDAL()
+notification_model_dal = NotificationModelDAL()
+
 meeting_model_dal = MeetingModelDAL()
 group_model_dal = GroupModelDAL()
 white_list_model_dal = WhiteListModelDAL()
@@ -112,8 +119,27 @@ async def validate_token(request: Request, call_next):
     response = await call_next(request)
     return response
 
+
+# defining websockets
+@app.websocket("/server/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await connectionManager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+        
+    except WebSocketDisconnect:
+        connectionManager.disconnect(websocket)
+
 @app.get("/server")
-async def read_root():
+async def read_root(token:str=Header(None)):
+    message = {
+        "userId" : "bb63eb8a-c008-4e5b-a182-30e7830eec28",
+        "message" : "Hello there"
+    }
+    #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,"bb63eb8a-c008-4e5b-a182-30e7830eec28")
+    print(f"Res from sck is : {res_from_sock}")     
     return {"Message": "This is meeting manager's backend by fast api, go to https://mmserver.ml/docs"}
 
 # @app.on_event("startup")
@@ -145,6 +171,7 @@ async def create_indexes():
     print("Creating indexes ...")
     await blockList_model_dal.create_index()
     await group_model_dal.create_index()
+    await notification_model_dal.create_index()
     await meeting_model_dal.create_index()
     await partner_model_dal.create_index()
     await schedule_model_dal.create_index()

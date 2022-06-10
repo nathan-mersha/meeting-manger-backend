@@ -589,7 +589,7 @@ async def update_attendee(action: UpdateAttendeeActions, updateAttendees: Update
     print("updating meeting.......")
     print(meetingData)
     meetingDataQuery = {"id" : meetingData.id}
-    meeting_model_dal.update(query=meetingDataQuery, update_data=meetingData)            
+    meeting_model_dal.update(query=meetingDataQuery, update_data=meetingData.to_json())            
     print("update response again ....")
     print(updateResponse)
     return updateResponse

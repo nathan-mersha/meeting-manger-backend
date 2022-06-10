@@ -4,6 +4,7 @@ import random
 import uuid
 import jwt
 from datetime import date
+from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, File, Header, HTTPException, Request, BackgroundTasks
@@ -19,9 +20,11 @@ from pydantic import BaseModel, ValidationError
 
 user_model_dal = UserModelDAL()
 hash_256 = hashlib.sha256()
+config_model_dal = ConfigModelDAL()
 sms = SMS()
 config = configparser.ConfigParser()
 config.read("./cred/config.ini")
+config_id = config["secrets"]["config_id"]
 
 token_encrypter_secret = config["secrets"]["token_encrypter_secret"]
 file_upload_path = config["file"]["file_upload_path"]
@@ -113,7 +116,8 @@ async def verifiy_email(verifyEmail: VerifyEmailModel, background_tasks: Backgro
     background_tasks.add_task(Emails.send_email, user.email, email_body, email_head)
     
     # generate token
-    after_six_months = date.today() + relativedelta(months=+6)
+    config_data = config_model_dal.read()
+    after_six_months = date.today() + relativedelta(days=+config_data.tokenExpirationInDay)
     encoded_jwt = jwt.encode({
         "id" : user.id,
         "expiration" : str(after_six_months)
@@ -222,7 +226,8 @@ async def login_user(loginModel: LoginModel):
         return HTTPException(status_code=401, detail="email/phoneNumber and password do not match")
    
     # generate token
-    after_six_months = date.today() + relativedelta(months=+6)
+    config_data = config_model_dal.read()
+    after_six_months = date.today() + relativedelta(days=+config_data.tokenExpirationInDay)
     encoded_jwt = jwt.encode({
         "id" : user.id,
         "expiration" : str(after_six_months)
