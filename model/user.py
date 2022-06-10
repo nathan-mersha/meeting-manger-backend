@@ -12,6 +12,10 @@ class AvailableDays(int, enum.Enum):
     FRIDAY = 5
     SATURDAY = 6
 
+class UserType(str, enum.Enum):
+    USER = "user"
+    OPERATOR = "operator"
+    ADMINISTRATOR = "administrator"
     
 class UserModel(BaseModel):
     id: Optional[str] = None
@@ -26,6 +30,7 @@ class UserModel(BaseModel):
     profilePicture : Optional[str] = None
     availableFrom: Optional[str] = None
     availableTo: Optional[str] = None
+    userType: Optional[UserType] = UserType.USER
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
     password: Optional[str] = None
     isEmailVerified:Optional[bool] = False
@@ -61,6 +66,7 @@ class UserModel(BaseModel):
             profilePicture=user_json["profilePicture"] if "profilePicture" in user_json else None,
             availableFrom=user_json["availableFrom"] if "availableFrom" in user_json else None,
             availableTo=user_json["availableTo"] if "availableTo" in user_json else None,
+            userType=user_json["userType"] if "userType" in user_json else None,
             workingDays=user_json["workingDays"] if "workingDays" in user_json else None,
             password=user_json["password"] if "password" in user_json else None,
             isEmailVerified=user_json["isEmailVerified"] if "isEmailVerified" in user_json else None,
@@ -92,6 +98,7 @@ class UserModel(BaseModel):
         if self.profilePicture != None: load["profilePicture"] = self.profilePicture
         if self.availableFrom != None: load["availableFrom"] = self.availableFrom    
         if self.availableTo != None: load["availableTo"] = self.availableTo
+        if self.userType != None: load["userType"] = self.userType
         if self.workingDays != None: load["workingDays"] = self.workingDays
         if self.password != None: load["password"] = self.password
         if self.isEmailVerified != None: load["isEmailVerified"] = self.isEmailVerified
@@ -113,9 +120,12 @@ class SignUpModel(BaseModel):
     lastName: Optional[str] = None
     companyName : Optional[str] = None
     title : Optional[str] = None
+    userType: Optional[UserType] = UserType.USER
     email: str
     phoneNumber : Optional[str] = None
     password: str
+
+
 
 class RequestVerificationEmail(BaseModel):
     email:str

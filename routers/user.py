@@ -12,7 +12,7 @@ from lib.sms import SMS
 from model.user import (ChangePasswordModel, ForgotPasswordModel, LoginModel,
                         RequestVerificationEmail,
                         RequestVerificationPhoneNumber, ResetPasswordModel,
-                        SignUpModel, UpdateUserModel, UserModel,
+                        SignUpModel, UpdateUserModel, UserModel, UserType,
                         VerifyEmailModel, VerifyPhoneNumberModel)
 
 from pydantic import BaseModel, ValidationError
@@ -367,7 +367,11 @@ async def upload_file(file: bytes=File(...), token:str=Header(None)):
 
 
 @router.post("/admin/create")
-async def create_user(userModel: UserModel,background_tasks: BackgroundTasks,token: str=Header(None)):
+async def create_user(request:Request,userModel: UserModel,background_tasks: BackgroundTasks,token: str=Header(None)):
+    validate=await validate_permission(request)
+    if(not validate):
+       return HTTPException(status_code=401, detail="permission denied")
+    
     # checking if user email does not already exists
     user_datas = user_model_dal.read({"email" : userModel.email})
     plan_password=userModel.password
@@ -397,7 +401,11 @@ async def create_user(userModel: UserModel,background_tasks: BackgroundTasks,tok
 
 
 @router.put("/admin/update_user/{id}")
-async def update_user(id:str,updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+async def update_user(request:Request,id:str,updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+    validate=await validate_permission(request)
+    if(not validate):
+       return HTTPException(status_code=401, detail="permission denied")
+
     user_id = id    
     user_query = {"id" : user_id}
     users = user_model_dal.read(query=user_query, limit=1)
@@ -418,7 +426,10 @@ class deactivatedUserModel(BaseModel):
         if self.isAccountDeactivated != None: load["isAccountDeactivated"] = self.isAccountDeactivated
         return load
 @router.put("/admin/changeUserAccountStatus")
-async def change_user_account_status(deactivatedUser: deactivatedUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+async def change_user_account_status(request:Request,deactivatedUser: deactivatedUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
+    validate=await validate_permission(request)
+    if(not validate):
+       return HTTPException(status_code=401, detail="permission denied")
     user_id = deactivatedUser.id    
     user_query = {"id" : user_id}
     users = user_model_dal.read(query=user_query, limit=1)
@@ -431,6 +442,36 @@ async def change_user_account_status(deactivatedUser: deactivatedUserModel,backg
     
     return {"message" : "user deactivated successfully"}
 
+class ChangeUserType(BaseModel):
+    id : str
+    userType: UserType
+
+async def validate_permission(request: Request):
+    user_id = request.headers["userId"]    
+    user_query = {"id" : user_id}
+    users = user_model_dal.read(query=user_query, limit=1)
+    print(users,UserType.ADMINISTRATOR)
+    if len(users) == 0:
+        return False
+    elif users[0].userType != UserType.ADMINISTRATOR:
+        return False
+    return True
+
+@router.put("/admin/changeUserAccountType")
+async def change_user_account_status(request:Request,changeUserType: ChangeUserType,background_tasks:BackgroundTasks, token: str=Header(None) ):
+    validate=await validate_permission(request)
+    if(not validate):
+       return HTTPException(status_code=401, detail="permission denied")
+    user_id = changeUserType.id    
+    user_query = {"id" : user_id}
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=401, detail="user does not exist")
+    updatedDataJSON={}
+    updatedDataJSON["userType"] = changeUserType.userType
+    user_model_dal.update(query=user_query,update_data=updatedDataJSON)
+    
+    return {"message" : "user type changed successfully"}
 
 class DeleteUserModel(BaseModel):
     email : str
