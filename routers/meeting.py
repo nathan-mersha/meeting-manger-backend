@@ -7,6 +7,7 @@ import uuid
 from dal.config import ConfigModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
+from lib.notifier import ConnectionManager
 from lib.shared import SharedFuncs
 from lib.sms import SMS
 from model.server_config import ConfigModel
@@ -18,6 +19,7 @@ from lib.email import Emails
 import phonenumbers
 import random
 
+connectionManager = ConnectionManager()
 meeting_model_dal = MeetingModelDAL()
 user_model_dal = UserModelDAL()
 schedule_model_dal = ScheduleModelDAL()
@@ -592,6 +594,14 @@ async def update_attendee(action: UpdateAttendeeActions, updateAttendees: Update
     meeting_model_dal.update(query=meetingDataQuery, update_data=meetingData.to_json())            
     print("update response again ....")
     print(updateResponse)
+    message = {
+        "userId" : meetingData.host,
+        "message" : "Hello there"
+    }
+    #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,meetingData.host)
+    print(f"Res from sck is : {res_from_sock}")     
+    
     return updateResponse
         
 
