@@ -42,6 +42,7 @@ class UserModel(BaseModel):
     nationalHoliday : Optional[str] = None
     isAccountDeactivated: Optional[bool] = False
     isAccountLocked: Optional[bool] = False
+    planTypeIsActiveTill: Optional[datetime] = None
     firstModified: Optional[datetime] = datetime.now()
     lastModified: Optional[datetime] = datetime.now()
 
@@ -78,6 +79,7 @@ class UserModel(BaseModel):
             nationalHoliday=user_json["nationalHoliday"] if "nationalHoliday" in user_json else None,
             isAccountDeactivated=user_json["isAccountDeactivated"] if "isAccountDeactivated" in user_json else None,
             isAccountLocked=user_json["isAccountLocked"] if "isAccountLocked" in user_json else None,
+            planTypeIsActiveTill=user_json["planTypeIsActiveTill"] if "planTypeIsActiveTill" in user_json else None,
             firstModified=user_json["firstModified"] if "firstModified" in user_json else None,
             lastModified=user_json["lastModified"] if "lastModified" in user_json else None
         )
@@ -99,6 +101,7 @@ class UserModel(BaseModel):
         if self.availableFrom != None: load["availableFrom"] = self.availableFrom    
         if self.availableTo != None: load["availableTo"] = self.availableTo
         if self.userType != None: load["userType"] = self.userType
+        if self.planTypeIsActiveTill != None: load["planTypeIsActiveTill"] = self.planTypeIsActiveTill
         if self.workingDays != None: load["workingDays"] = self.workingDays
         if self.password != None: load["password"] = self.password
         if self.isEmailVerified != None: load["isEmailVerified"] = self.isEmailVerified

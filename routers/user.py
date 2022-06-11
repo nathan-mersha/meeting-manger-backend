@@ -3,7 +3,7 @@ import hashlib
 import random
 import uuid
 import jwt
-from datetime import date
+from datetime import date, datetime
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
@@ -49,7 +49,7 @@ async def sign_up_user(signUpData: SignUpModel, background_tasks: BackgroundTask
         user_datas_phone = user_model_dal.read(user_phone_query,limit=1)
         if len(user_datas_phone) > 0:
             raise HTTPException(status_code=400, detail="user by that phone number already exists") 
-
+    
     user = None
     try:
         user = UserModel(
@@ -72,8 +72,12 @@ async def sign_up_user(signUpData: SignUpModel, background_tasks: BackgroundTask
     
     # create user id
     user.id = str(uuid.uuid4())
-    user.planType = "basic"
-
+    config_data = config_model_dal.read()
+    if config_data.promoPeriod!=0:
+        user.planType = "vip"
+        user.planTypeIsActiveTill = datetime.combine(date.today() + relativedelta(months=+config_data.promoPeriod),datetime.min.time())
+    else:
+        user.planType = "basic"
     emailVerification = str(random.randint(111111,999999))
     phoneVerification = str(random.randint(111111,999999))
     user.payload = {
@@ -117,7 +121,7 @@ async def verifiy_email(verifyEmail: VerifyEmailModel, background_tasks: Backgro
     
     # generate token
     config_data = config_model_dal.read()
-    after_six_months = date.today() + relativedelta(days=+config_data.tokenExpirationInDay)
+    after_six_months = date.today() + relativedelta(minutes=+(60*config_data.tokenExpirationInDay))
     encoded_jwt = jwt.encode({
         "id" : user.id,
         "expiration" : str(after_six_months)
@@ -227,7 +231,7 @@ async def login_user(loginModel: LoginModel):
    
     # generate token
     config_data = config_model_dal.read()
-    after_six_months = date.today() + relativedelta(days=+config_data.tokenExpirationInDay)
+    after_six_months = date.today() + relativedelta(minutes=+(60*config_data.tokenExpirationInDay))
     encoded_jwt = jwt.encode({
         "id" : user.id,
         "expiration" : str(after_six_months)
