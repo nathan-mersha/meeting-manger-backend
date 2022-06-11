@@ -3,7 +3,9 @@ import hashlib
 import random
 import uuid
 import jwt
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+
+from pytz import timezone
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
@@ -121,11 +123,12 @@ async def verifiy_email(verifyEmail: VerifyEmailModel, background_tasks: Backgro
     
     # generate token
     config_data = config_model_dal.read()
-    after_six_months = date.today() + relativedelta(minutes=+(60*config_data.tokenExpirationInDay))
+    # access_token_expires  = datetime.utcnow() +timedelta(minutes=60*config_data.tokenExpirationInDay)
     encoded_jwt = jwt.encode({
         "id" : user.id,
-        "expiration" : str(after_six_months)
+        "expiration" : str(datetime.now() + timedelta(minutes=(60*config_data.tokenExpirationInDay)))  
     }, token_encrypter_secret, algorithm="HS256")
+
 
     return {
         "message" : "user email verified",
@@ -231,10 +234,10 @@ async def login_user(loginModel: LoginModel):
    
     # generate token
     config_data = config_model_dal.read()
-    after_six_months = date.today() + relativedelta(minutes=+(60*config_data.tokenExpirationInDay))
+    #access_token_expires  =datetime.utcnow() + timedelta(minutes=60*config_data.tokenExpirationInDay)
     encoded_jwt = jwt.encode({
         "id" : user.id,
-        "expiration" : str(after_six_months)
+        "expiration" : str(datetime.now() + timedelta(minutes=(60*config_data.tokenExpirationInDay)))  
     }, token_encrypter_secret, algorithm="HS256")
 
     user.password = None
