@@ -132,13 +132,15 @@ async def websocket_endpoint(websocket: WebSocket):
         connectionManager.disconnect(websocket)
 
 @app.get("/server")
-async def read_root(token:str=Header(None)):
+async def read_root(request: Request,token:str=Header(None)):
+    userId = request.headers["userId"]
+    print(f"userId {userId}")
     message = {
-        "userId" : "bb63eb8a-c008-4e5b-a182-30e7830eec28",
+        "userId" : userId,
         "message" : "Hello there"
     }
     #json.dumps(message)
-    res_from_sock = await connectionManager.send_personal_message(message,"bb63eb8a-c008-4e5b-a182-30e7830eec28")
+    res_from_sock = await connectionManager.send_personal_message(message,userId)
     print(f"Res from sck is : {res_from_sock}")     
     return {"Message": "This is meeting manager's backend by fast api, go to https://mmserver.ml/docs"}
 
@@ -158,7 +160,8 @@ def validate_token_and_get_user(token):
         return "token is corrupted"
 
     user_id = decoded_token_data["id"]
-    expiration = parser.parse(decoded_token_data["expiration"])
+    expiration = datetime.fromisoformat(decoded_token_data["expiration"])
+    print(f"expiration {expiration} {expiration < datetime.now()} {datetime.now()}")
     now = datetime.now()
 
     if expiration < now: # token expired

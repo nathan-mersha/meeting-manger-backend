@@ -38,10 +38,6 @@ class ConnectionManager:
                 
 
 
-
-
-        
-
     def disconnect(self, websocket: WebSocket):
         print("Socket disconnected ----->")
         for active_connection in self.active_connections:
@@ -75,7 +71,6 @@ class ConnectionManager:
                         sent=False,
                         first_modified=str(datetime.now().isoformat()),
                         last_modified=str(datetime.now().isoformat()))
-
         await self.notification_model_dal.create(notification_data)
         return False
 

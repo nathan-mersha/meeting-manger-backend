@@ -124,6 +124,10 @@ async def verifiy_email(verifyEmail: VerifyEmailModel, background_tasks: Backgro
     # generate token
     config_data = config_model_dal.read()
     # access_token_expires  = datetime.utcnow() +timedelta(minutes=60*config_data.tokenExpirationInDay)
+    print(str(datetime.now() + timedelta(minutes=(60*config_data.tokenExpirationInDay))))
+    print(str(datetime.now()))
+    print(str(timedelta(minutes=(60*config_data.tokenExpirationInDay))))
+    print(str((60*config_data.tokenExpirationInDay)))
     encoded_jwt = jwt.encode({
         "id" : user.id,
         "expiration" : str(datetime.now() + timedelta(minutes=(60*config_data.tokenExpirationInDay)))  
@@ -235,6 +239,10 @@ async def login_user(loginModel: LoginModel):
     # generate token
     config_data = config_model_dal.read()
     #access_token_expires  =datetime.utcnow() + timedelta(minutes=60*config_data.tokenExpirationInDay)
+    # print(str(datetime.now() + timedelta(minutes=(60*config_data.tokenExpirationInDay))))
+    # print(str(datetime.now()))
+    # print(str(timedelta(minutes=(60*config_data.tokenExpirationInDay))))
+    # print(str((60*config_data.tokenExpirationInDay)))
     encoded_jwt = jwt.encode({
         "id" : user.id,
         "expiration" : str(datetime.now() + timedelta(minutes=(60*config_data.tokenExpirationInDay)))  
@@ -278,8 +286,11 @@ async def get_user_detail(request:Request, token:str=Header(None)):
     return users[0]
 
 @router.get("/all")
-async def get_all_users(token:str=Header(None), page:int=1, limit:int=12,sort="firstModified"):
-    userData = user_model_dal.read(query={}, page=page, limit=limit, sort=sort)
+async def get_all_users(token:str=Header(None),allUser:bool=True, page:int=1, limit:int=12,sort="firstModified"):
+    if allUser:
+        userData = user_model_dal.read(query={}, page=page, limit=limit, sort=sort)
+    else:
+        userData = user_model_dal.read(query={"$or": [{"userType": "operator"}, {"userType": "administrator"}]}, page=page, limit=limit, sort=sort)
     return userData
 
 @router.post("/reset_password")
