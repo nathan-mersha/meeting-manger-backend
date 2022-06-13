@@ -24,6 +24,10 @@ async def create(partners: CreatePartners, request : Request,background_tasks: B
     print(f"len of partners : {len(partners.partners)}")
     for partnerId in partners.partners:
         print(f"loping for : {partnerId}")
+        if partnerId == userId:
+            creationResponses[partnerId] = "you cant add your own id"
+            continue
+        
         isUserBlocked = sharedFuncs.isUserBlocked(userId, partnerId)
         
         if isUserBlocked:
