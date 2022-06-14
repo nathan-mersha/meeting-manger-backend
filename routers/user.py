@@ -285,6 +285,15 @@ async def get_user_detail(request:Request, token:str=Header(None)):
         return HTTPException(status_code=404, detail="user not found")
     return users[0]
 
+@router.get("/detailById")
+async def get_user_detail_By(userId:str, token:str=Header(None)):
+    user_id = userId
+    user_query = {"id" : user_id}
+    users = user_model_dal.read(query=user_query, limit=1)
+    if len(users) == 0:
+        return HTTPException(status_code=404, detail="user not found")
+    return users[0]
+
 @router.get("/all")
 async def get_all_users(token:str=Header(None),allUser:bool=True, page:int=1, limit:int=12,sort="firstModified"):
     if allUser:
