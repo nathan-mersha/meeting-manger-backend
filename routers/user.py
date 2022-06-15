@@ -422,6 +422,8 @@ async def create_user(request:Request,userModel: UserModel,background_tasks: Bac
     
     # create user id
     userModel.id = str(uuid.uuid4())
+    userModel.isEmailVerified = True
+    userModel.isPhoneVerified = True
     # create user
     await user_model_dal.create(user_model=userModel)
     email_body = f"Welcome to Arrange Meeting \n your password is {plan_password} please change your password"
