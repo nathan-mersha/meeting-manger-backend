@@ -82,6 +82,7 @@ class MeetingModel(BaseModel):
     title:Optional[str] = None
     description:Optional[str] = None
     host: str 
+    hostName:Optional[str] = None
     attendees : Optional[list] = []
     fromDate: Optional[datetime] = None
     toDate : Optional[datetime] = None
@@ -102,6 +103,7 @@ class MeetingModel(BaseModel):
             title=meeting_json["title"],
             description=meeting_json["description"],
             host=meeting_json["host"],
+            hostName=meeting_json["hostName"],
             attendees=MeetingAttendees.to_model_list(meeting_json["attendees"]),
             fromDate=meeting_json["fromDate"],
             toDate=meeting_json["toDate"],
@@ -131,6 +133,7 @@ class MeetingModel(BaseModel):
         if self.title != None: load["title"] = self.title
         if self.description != None: load["description"] = self.description
         if self.host != None: load["host"] = self.host
+        if self.hostName != None: load["hostName"] = self.hostName
         if self.attendees != None: load["attendees"] = MeetingAttendees.to_json_list(self.attendees)
         if self.fromDate != None: load["fromDate"] = self.fromDate
         if self.toDate != None: load["toDate"] = self.toDate

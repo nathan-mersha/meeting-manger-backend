@@ -56,7 +56,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     if len(user_datas) == 0:
         return HTTPException(status_code=400, detail="host by id not found")
     host_data = user_datas[0]
-
+    createMeeting.hostName = host_data.firstName + " " + host_data.lastName
     #checking pricing plan
     serverConfig = config_model_dal.read()
     allowedNoOfAttendeesForHostsPlan = serverConfig.pricingPlan[host_data.planType]["allowedNoOfAttendees"]
@@ -182,6 +182,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
                 background_tasks.add_task(sms.send, attendeeUser.phoneNumber, sms_message)
 
     createMeeting.attendees = MeetingAttendees.to_model_list(editedAttendees)
+    
     meeting_data = await meeting_model_dal.create(meeting_model=createMeeting)
    
     if not meeting_data.acknowledged:
