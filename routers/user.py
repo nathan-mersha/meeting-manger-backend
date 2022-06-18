@@ -386,7 +386,7 @@ async def update_profile(request:Request, updateUser: UpdateUserModel,background
     return {"message" : "user successfully updated"}
 
 @router.post("/uploadfile")
-async def upload_file(file: UploadFile=File(...), token:str=Header(None)):
+async def upload_file(file: bytes=File(...), token:str=Header(None)):
     try:
         contents = await file.read()
         name = f"{str(uuid.uuid4())}.{file.filename.split('.')[1]}"
