@@ -1,6 +1,7 @@
 import configparser
 import hashlib
 import random
+from typing import Union
 import uuid
 import jwt
 from datetime import date, datetime, timedelta
@@ -9,7 +10,7 @@ from pytz import timezone
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
 from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter, File, Header, HTTPException, Request, BackgroundTasks
+from fastapi import APIRouter, File, Header, HTTPException, Request, BackgroundTasks, UploadFile
 from lib.email import Emails
 from lib.sms import SMS
 from model.user import (ChangePasswordModel, ForgotPasswordModel, LoginModel,
@@ -385,12 +386,29 @@ async def update_profile(request:Request, updateUser: UpdateUserModel,background
     return {"message" : "user successfully updated"}
 
 @router.post("/uploadfile")
-async def upload_file(file: bytes=File(...), token:str=Header(None)):
-    name = f"{str(uuid.uuid4())}.jpg"
-    fileName = f"{file_upload_path}/{name}"
-    with open(fileName,'wb') as image:
-        image.write(file)
-        image.close()
+async def upload_file(file: UploadFile=File(...), token:str=Header(None)):
+    try:
+        contents = await file.read()
+        name = f"{str(uuid.uuid4())}.{file.filename.split('.')[1]}"
+        fileName = f"{file_upload_path}/{name}"
+        with open(fileName, 'wb') as f:
+            f.write(contents)
+    except Exception:
+        print(Exception)
+        return {"message": "There was an error uploading the file"}
+    finally:
+        await file.close()
+        
+    return {"filePath": f"https://mmserver.ml/images/{file.filename}"}
+
+    # if not file:
+    #     return {"message": "No upload file sent"}
+    # contents = await file.read()
+    # name = f"{str(uuid.uuid4())}.jpg"
+    # fileName = f"{file_upload_path}/{name}"
+    # with open(fileName,'wb') as image:
+    #     image.write(contents)
+    #     image.close()
 
     
     return {"filePath" : f"https://mmserver.ml/images/{name}"}
