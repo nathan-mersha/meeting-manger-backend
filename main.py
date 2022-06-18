@@ -178,7 +178,6 @@ async def create_indexes():
     print("Creating indexes ...")
     await blockList_model_dal.create_index()
     await group_model_dal.create_index()
-    #await notification_model_dal.create_index()
     await meeting_model_dal.create_index()
     await partner_model_dal.create_index()
     await schedule_model_dal.create_index()
