@@ -399,7 +399,7 @@ async def upload_file(file: UploadFile=File(...), token:str=Header(None)):
     finally:
         await file.close()
         
-    return {"filePath": f"https://mmserver.ml/images/{file.filename}"}
+    return {"filePath": f"https://mmserver.ml/images/{name}"}
 
     # if not file:
     #     return {"message": "No upload file sent"}
