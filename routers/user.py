@@ -386,15 +386,17 @@ async def update_profile(request:Request, updateUser: UpdateUserModel,background
     return {"message" : "user successfully updated"}
 
 @router.post("/uploadfile")
-async def upload_file(file: bytes=File(...), token:str=Header(None)):
+async def upload_file(file: UploadFile=File(...), token:str=Header(None)):
     try:
         contents = await file.read()
         name = f"{str(uuid.uuid4())}.{file.filename.split('.')[1]}"
+        print(name)
         fileName = f"{file_upload_path}/{name}"
         with open(fileName, 'wb') as f:
             f.write(contents)
-    except Exception:
-        print(Exception)
+            f.close()
+    except Exception as e:
+        print(e)
         return {"message": "There was an error uploading the file"}
     finally:
         await file.close()
