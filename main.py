@@ -148,10 +148,10 @@ async def read_root(request: Request,token:str=Header(None)):
     print(f"Res from sck is : {res_from_sock}")     
     return {"Message": "This is meeting manager's backend by fast api, go to https://mmserver.ml/docs"}
 
-# @app.on_event("startup")
-# async def startup_event():
-#     await initialize_config()
-#     await create_indexes()
+@app.on_event("startup")
+async def startup_event():
+    await initialize_config()
+    await create_indexes()
 
 def validate_token_and_get_user(token):
     if token == None:
