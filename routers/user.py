@@ -386,11 +386,11 @@ async def update_profile(request:Request, updateUser: UpdateUserModel,background
     return {"message" : "user successfully updated"}
 
 @router.post("/uploadfile")
-async def upload_file(file: bytes=File(...), token:str=Header(None)):
+async def upload_file(file: UploadFile=File(...), token:str=Header(None)):
     print("uploadfile 123")
     try:
         contents = await file.read()
-        name = f"{str(uuid.uuid4())}.jpg"
+        name = f"{str(uuid.uuid4())}.{file.filename.split('.')[1]}"
         print(name)
         fileName = f"{file_upload_path}/{name}"
         with open(fileName, 'wb') as f:
@@ -400,8 +400,7 @@ async def upload_file(file: bytes=File(...), token:str=Header(None)):
         print(e)
         return {"message": "There was an error uploading the file"}
     finally:
-        pass
-        #await file.close()
+        await file.close()
         
     return {"filePath": f"https://mmserver.ml/images/{name}"}
 
