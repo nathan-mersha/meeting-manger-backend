@@ -69,7 +69,7 @@ async def validate_token(request: Request, call_next):
         "server/user/request/verification/email",
         "server/user/request/verification/phone_number",
         "server/user/delete_for_debug",
-        "server/server/ws",
+        "server/ws",
         "server/meeting/confirm_meeting/*",
         "server/contactUs/create",
         "server/partner/respond_as_a_partner/*",
