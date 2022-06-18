@@ -125,11 +125,13 @@ async def validate_token(request: Request, call_next):
 # defining websockets
 @app.websocket("/server/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    print("here connected......")
     await connectionManager.connect(websocket)
+    print("connection manger...")
     try:
         while True:
             data = await websocket.receive_text()
-        
+            print(data)
     except WebSocketDisconnect:
         connectionManager.disconnect(websocket)
 
