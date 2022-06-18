@@ -4,9 +4,10 @@ import re
 from datetime import datetime
 import jwt
 from dateutil import parser
-from fastapi import FastAPI, Header, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Header, Request
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from dal.blocklist import BlockListModelDAL
 from lib.notifier import ConnectionManager
