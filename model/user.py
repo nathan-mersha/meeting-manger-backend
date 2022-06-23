@@ -38,6 +38,9 @@ class UserModel(BaseModel):
     payload: Optional[dict] = {}
     planType: Optional[str] = "basic"
     countryCode: Optional[str] = None
+    meetingInAMouth: Optional[int] = 0
+    meetingTotal: Optional[int] = 0
+    meetingMouth: Optional[str] = None
     country: Optional[str] = None
     nationalHoliday : Optional[str] = None
     isAccountDeactivated: Optional[bool] = False
@@ -76,6 +79,9 @@ class UserModel(BaseModel):
             planType=user_json["planType"] if "planType" in user_json else None,
             countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
             country=user_json["country"] if "country" in user_json else None,
+            meetingInAMouth=user_json["meetingInAMouth"] if "meetingInAMouth" in user_json else 0,
+            meetingTotal=user_json["meetingTotal"] if "meetingTotal" in user_json else 0,
+            meetingMouth=user_json["meetingMouth"] if "meetingMouth" in user_json else None,
             nationalHoliday=user_json["nationalHoliday"] if "nationalHoliday" in user_json else None,
             isAccountDeactivated=user_json["isAccountDeactivated"] if "isAccountDeactivated" in user_json else None,
             isAccountLocked=user_json["isAccountLocked"] if "isAccountLocked" in user_json else None,
@@ -110,6 +116,9 @@ class UserModel(BaseModel):
         if self.planType != None: load["planType"] = self.planType
         if self.countryCode != None: load["countryCode"] = self.countryCode
         if self.country != None: load["country"] = self.country
+        if self.meetingInAMouth != None: load["meetingInAMouth"] = self.meetingInAMouth
+        if self.meetingTotal != None: load["meetingTotal"] = self.meetingTotal
+        if self.meetingMouth != None: load["meetingMouth"] = self.meetingMouth
         if self.nationalHoliday != None: load["nationalHoliday"] = self.nationalHoliday
         if self.isAccountDeactivated != None: load["isAccountDeactivated"] = self.isAccountDeactivated
         if self.isAccountLocked != None: load["isAccountLocked"] = self.isAccountLocked

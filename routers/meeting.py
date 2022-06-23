@@ -1,3 +1,4 @@
+from datetime import datetime
 from http.client import HTTPException
 from pickle import NONE
 from random import random
@@ -189,6 +190,14 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
         return {"message" : "something went wrong while creating meeting"}
 
     # todo notify attendees via email about the created meeting
+    user_query = {"id" : user_id}
+    if(host_data.meetingMouth==f"{datetime.now().month}/{datetime.now().year}"):
+       host_data.meetingMouth=host_data.meetingInAMouth+1;
+    else:
+        host_data.meetingMouth=1;
+        host_data.meetingMouth=f"{datetime.now().month}/{datetime.now().year}";
+    host_data.meetingTotal=host_data.meetingInAMouth+1;
+    user_model_dal.update(query=user_query,update_data=host_data.to_json())
     return {"message" : "meeting successfully created"} 
 
 @router.get("/confirm_meeting/{meetingId}/{userId}/{status}")
