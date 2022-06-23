@@ -194,7 +194,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     if(host_data.meetingMouth==f"{datetime.now().month}/{datetime.now().year}"):
        host_data.meetingMouth=host_data.meetingInAMouth+1;
     else:
-        host_data.meetingMouth=1;
+        host_data.meetingInAMouth=1;
         host_data.meetingMouth=f"{datetime.now().month}/{datetime.now().year}";
     host_data.meetingTotal=host_data.meetingInAMouth+1;
     user_model_dal.update(query=user_query,update_data=host_data.to_json())
