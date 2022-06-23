@@ -198,6 +198,12 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
         host_data.meetingMouth=f"{datetime.now().month}/{datetime.now().year}";
     host_data.meetingTotal=host_data.meetingInAMouth+1;
     user_model_dal.update(query=user_query,update_data=host_data.to_json())
+    message = {
+                    "userId" : user_id,
+                    "message" : "creating schedule",
+                    }
+                #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,user_id)
     return {"message" : "meeting successfully created"} 
 
 @router.get("/confirm_meeting/{meetingId}/{userId}/{status}")
@@ -230,7 +236,12 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
                 )
                 print("creating schedule")
                 await schedule_model_dal.create(scheduleData)
-
+                message = {
+                    "userId" : attendee.userId,
+                    "message" : "creating schedule",
+                    }
+                #json.dumps(message)
+                res_from_sock = await connectionManager.send_personal_message(message,attendee.userId)
                 continue
    
     meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
@@ -450,6 +461,13 @@ async def update_meeting(updateMeeting: UpdateMeetingModel,meetingId:str, reques
         Meeting Link : {updateMeeting.meetingLink}
     '''
     background_tasks.add_task(Emails.send_email, email_recipients, email_body, email_head)
+    message = {
+        "userId" : userId,
+        "message" : "meeting updated",
+    }
+    #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,userId)
+    print(f"Res from sck is : {res_from_sock}")   
     return {"message" : "meeting successfully updated"}
 
 @router.put("/update_attendee/{action}/{meetingId}")
@@ -606,7 +624,7 @@ async def update_attendee(action: UpdateAttendeeActions, updateAttendees: Update
     print(updateResponse)
     message = {
         "userId" : meetingData.host,
-        "message" : "Hello there"
+        "message" : "meeting updated",
     }
     #json.dumps(message)
     res_from_sock = await connectionManager.send_personal_message(message,meetingData.host)

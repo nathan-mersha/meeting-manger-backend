@@ -2,6 +2,7 @@ from fastapi import APIRouter, Header, Request, BackgroundTasks
 from dal.partner import PartnerModelDAL
 from dal.user import UserModelDAL
 from dal.whitelist import WhiteListModelDAL
+from lib.notifier import ConnectionManager
 from lib.shared import SharedFuncs
 from model.partner import PartnerModel, CreatePartners
 import uuid
@@ -10,7 +11,7 @@ partner_model_dal = PartnerModelDAL()
 user_model_dal = UserModelDAL()
 white_list_model_dal = WhiteListModelDAL()
 sharedFuncs = SharedFuncs()
-
+connectionManager = ConnectionManager()
 router = APIRouter(
     prefix="/server/partner",
     tags=["partner"],
@@ -73,7 +74,12 @@ async def create(partners: CreatePartners, request : Request,background_tasks: B
 
         background_tasks.add_task(partnerData.email, email_body, email_head)
         creationResponses[partnerId] = "partner successfully created"
-        
+    message = {
+                    "userId" : userId,
+                    "message" : "partner successfully created",
+                    }
+                #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,userId)    
     return creationResponses
 
 @router.get("/find/i_added")
@@ -129,6 +135,12 @@ async def respond_as_a_partner(partnerId:str, subjectId: str):
         return {"message" : "user is already a partner"}
 
     await partner_model_dal.create(partnerModel)
+    message = {
+                    "userId" : subjectId,
+                    "message" : "partner",
+                    }
+                #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,subjectId)
     return {"message" : f"You are now a partner with : {partnerId}"}
 
 @router.delete("/delete/{partnerId}")
@@ -138,6 +150,11 @@ async def delete_meeting(partnerId : str, request:Request, token:str=Header(None
     partnerQuery = {"subject" : userId, "partner" : partnerId}
     # deleting contact us message
     partner_model_dal.delete(query=partnerQuery)
-
+    message = {
+                    "userId" : partnerId,
+                    "message" : "partner has been successfully deleted",
+                    }
+                #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,partnerId)
     return {"message" : "partner has been successfully deleted"}
 

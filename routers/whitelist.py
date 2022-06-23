@@ -1,6 +1,7 @@
 from http.client import HTTPException
 from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
+from lib.notifier import ConnectionManager
 from lib.shared import SharedFuncs
 from model.whitelist import CreateWhiteListModel, WhiteListModel, WhitelistStatus
 from lib.email import Emails
@@ -10,6 +11,7 @@ from dal.user import UserModelDAL
 whiteList_model_dal = WhiteListModelDAL()
 user_model_dal = UserModelDAL()
 sharedFuncs = SharedFuncs()
+connectionManager = ConnectionManager()
 
 router = APIRouter(
     prefix="/server/whitelist",
@@ -72,6 +74,12 @@ async def create(createWhiteList: CreateWhiteListModel, request: Request, backgr
         to Deny click here https://mmserver.ml/server/whitelist/request/deny/{whiteListId}
     '''
     background_tasks.add_task(Emails.send_email, email_recipient, email_body, email_head)
+    message = {
+                    "userId" : userId,
+                    "message" : "White list successfully requited",
+                    }
+                #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,userId)
     return {"message": "White list successfully requsted"}
 
 
@@ -152,5 +160,10 @@ async def delete_whitelist(whiteListId: str, request: Request, token: str = Head
         return HTTPException(status_code=401, detail="user not allowed to delete white list data")
 
     whiteList_model_dal.delete(query=whiteListQuery)
-
+    message = {
+                    "userId" : userId,
+                    "message" : "whitelist record delete",
+                    }
+                #json.dumps(message)
+    res_from_sock = await connectionManager.send_personal_message(message,userId)
     return {"message": "whitelist record delete"}

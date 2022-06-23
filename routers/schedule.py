@@ -4,6 +4,7 @@ from fastapi import APIRouter, Header, Request
 from dal.schedule import ScheduleModelDAL
 from dal.user import UserModelDAL
 from dal.whitelist import WhiteListModelDAL
+from lib.notifier import ConnectionManager
 from model.schedule import ScheduleModel, UpdateScheduleModel, RequestAvailableTimeModel
 from datetime import datetime
 import phonenumbers
@@ -11,6 +12,8 @@ import phonenumbers
 schedule_model_dal = ScheduleModelDAL()
 whiteList_model_dal = WhiteListModelDAL()
 user_model_dal = UserModelDAL()
+connectionManager = ConnectionManager()
+
 
 router = APIRouter(
     prefix="/server/schedule",
