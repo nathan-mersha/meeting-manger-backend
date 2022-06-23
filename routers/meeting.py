@@ -192,7 +192,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     # todo notify attendees via email about the created meeting
     user_query = {"id" : user_id}
     if(host_data.meetingMouth==f"{datetime.now().month}/{datetime.now().year}"):
-       host_data.meetingMouth=host_data.meetingInAMouth+1;
+       host_data.meetingInAMouth=host_data.meetingInAMouth+1;
     else:
         host_data.meetingInAMouth=1;
         host_data.meetingMouth=f"{datetime.now().month}/{datetime.now().year}";
