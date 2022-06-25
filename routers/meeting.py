@@ -243,6 +243,19 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
                 #json.dumps(message)
                 res_from_sock = await connectionManager.send_personal_message(message,attendee.userId)
                 continue
+            elif status == MeetingAttendeStatus.reject:
+                print("status is reject")
+                scheduleQuery = {"userId" : attendee.userId,"fromDate":meetingData.fromDate,"toDate":meetingData.toDate,"title":meetingData.title,"note":meetingData.note,
+                "mode":meetingData.mode}
+                schedule_model_dal.delete(query=scheduleQuery)
+                message = {
+                    "userId" : attendee.userId,
+                    "message" : "deleted schedule",
+                    }
+                #json.dumps(message)
+                res_from_sock = await connectionManager.send_personal_message(message,attendee.userId)
+                continue
+
    
     meetingUpdateData = {"attendees" : MeetingAttendees.to_json_list(meetingData.attendees)}
     meeting_model_dal.update(query=meetingQuery, update_data=meetingUpdateData)
