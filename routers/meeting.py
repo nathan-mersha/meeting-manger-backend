@@ -5,6 +5,8 @@ from random import random
 import hashlib
 from fastapi import APIRouter, Header, Request, BackgroundTasks
 import uuid
+
+import pytz
 from dal.config import ConfigModelDAL
 from dal.meeting import MeetingModelDAL
 from dal.user import UserModelDAL
@@ -110,7 +112,6 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
                 status=MeetingAttendeStatus.pending
             )
             editedAttendees.append(ma.to_json())
-
             # send email
             email_head = "You have been invited to attend a meeting"
             email_body = f'''
@@ -123,9 +124,9 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             Note : {createMeeting.note}
             Meeting Link : {createMeeting.meetingLink}
             Login Password is : {str(randomPasswordForNewUser)}
-            Are you comming ?
-            Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/accept
-            No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/reject
+            Are you coming ?
+            Yes I am coming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/accept
+            No am not coming -> click here https://mmserver.ml/server/meeting/confirm_meeting/new_invite/{createMeeting.id}/{newAttendeeUserId}/reject
             '''
             background_tasks.add_task(Emails.send_email,meetingAttendee, email_body, email_head)
         
@@ -164,17 +165,21 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             )
             editedAttendees.append(ma.to_json())
             # send email
+            utcmoment_naive = datetime.fromisoformat(createMeeting.fromDate)
+            utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
+            localFormat = "%Y-%m-%d %H:%M:%S"
+            localDatetime = utcmoment.astimezone(pytz.timezone(attendeeUser.timezone))            
             email_head = f"Request meeting from {host_data.firstName}"
             email_body = f'''
                 Meeting title : {createMeeting.title}
                 Meeting description : {createMeeting.description}
                 Attendees : {len(createMeeting.attendees)}
-                Date : {createMeeting.fromDate}
+                Date : {localDatetime.strftime(localFormat)}
                 Note : {createMeeting.note}
                 Meeting Link : {createMeeting.meetingLink}
-                Are you comming ?
-                Yes I am comming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{attendeeUser.id}/accept
-                No am not comming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{attendeeUser.id}/reject
+                Are you coming ?
+                Yes I am coming (twss) -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{attendeeUser.id}/accept
+                No am not coming -> click here https://mmserver.ml/server/meeting/confirm_meeting/{createMeeting.id}/{attendeeUser.id}/reject
             '''
             background_tasks.add_task(Emails.send_email, attendeeUser.email, email_body, email_head)
 
@@ -273,15 +278,20 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
     if len(attendee_datas) == 0:
         return {"message" : f"attendee not found"}
     attendee_data = attendee_datas[0]
-
+    utcmoment_naive = datetime.fromisoformat(meetingData.fromDate)
+    utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
+    localFormat = "%Y-%m-%d %H:%M:%S"
+    localDatetimeHost = utcmoment.astimezone(pytz.timezone(host_data.timezone))            
+    localDatetime = utcmoment.astimezone(pytz.timezone(attendee_data.timezone))            
+            
     # send email for host
     host_email_head = f"{attendee_data.firstName} has {status} your invitation"
     host_email_body = f'''
         {attendee_data.firstName} has {status} your invitation
-        Meeting title : {meetingData.title}
+            Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.fromDate}
+            Date : {localDatetimeHost.strftime(localFormat)}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     '''   
@@ -294,7 +304,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.fromDate}
+            Date : {localDatetime.strftime(localFormat)}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     ''' 
@@ -337,7 +347,12 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
     if len(attendee_datas) == 0:
         return {"message" : f"attendee not found"}
     attendee_data = attendee_datas[0]
-
+    utcmoment_naive = datetime.fromisoformat(meetingData.fromDate)
+    utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
+    localFormat = "%Y-%m-%d %H:%M:%S"
+    localDatetimeHost = utcmoment.astimezone(pytz.timezone(host_data.timezone))            
+    localDatetime = utcmoment.astimezone(pytz.timezone(attendee_data.timezone))            
+            
     # send email for host
     host_email_head = f"{attendee_data.firstName} has {status} your invitation"
     host_email_body = f'''
@@ -345,7 +360,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.fromDate}
+            Date : {localDatetimeHost.strftime(localFormat)}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     '''   
@@ -358,7 +373,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
         Meeting title : {meetingData.title}
             Meeting description : {meetingData.description}
             Attendees : {len(meetingData.attendees)}
-            Date : {meetingData.fromDate}
+            Date : {localDatetime.strftime(localFormat)}
             Note : {meetingData.note}
             Meeting Link : {meetingData.meetingLink}
     ''' 

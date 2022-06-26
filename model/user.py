@@ -3,6 +3,8 @@ from pydantic import BaseModel, validator
 from typing import List, Optional
 import enum
 
+from pytz import timezone
+
 class AvailableDays(int, enum.Enum):
     SUNDAY = 0
     MONDAY = 1
@@ -38,6 +40,7 @@ class UserModel(BaseModel):
     payload: Optional[dict] = {}
     planType: Optional[str] = "basic"
     countryCode: Optional[str] = None
+    timezone:Optional[str] = "UTC"
     meetingInAMouth: Optional[int] = 0
     meetingTotal: Optional[int] = 0
     meetingMouth: Optional[str] = None
@@ -79,6 +82,7 @@ class UserModel(BaseModel):
             planType=user_json["planType"] if "planType" in user_json else None,
             countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
             country=user_json["country"] if "country" in user_json else None,
+            timezone=user_json["timezone"] if "timezone" in user_json else "UTC",
             meetingInAMouth=user_json["meetingInAMouth"] if "meetingInAMouth" in user_json else 0,
             meetingTotal=user_json["meetingTotal"] if "meetingTotal" in user_json else 0,
             meetingMouth=user_json["meetingMouth"] if "meetingMouth" in user_json else None,
@@ -116,6 +120,7 @@ class UserModel(BaseModel):
         if self.planType != None: load["planType"] = self.planType
         if self.countryCode != None: load["countryCode"] = self.countryCode
         if self.country != None: load["country"] = self.country
+        if self.timezone != None: load["timezone"] = self.timezone
         if self.meetingInAMouth != None: load["meetingInAMouth"] = self.meetingInAMouth
         if self.meetingTotal != None: load["meetingTotal"] = self.meetingTotal
         if self.meetingMouth != None: load["meetingMouth"] = self.meetingMouth
@@ -184,6 +189,7 @@ class UpdateUserModel(BaseModel):
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
     countryCode: Optional[str] = None
     country: Optional[str] = None
+    timezone: Optional[str] = "UTC"
     nationalHoliday: Optional[str] = None
 
     def to_json(self):
@@ -202,6 +208,7 @@ class UpdateUserModel(BaseModel):
         if self.workingDays != None: load["workingDays"] = self.workingDays
         if self.countryCode != None: load["countryCode"] = self.countryCode
         if self.country != None: load["country"] = self.country
+        if self.timezone != None: load["timezone"] = self.timezone
         if self.nationalHoliday != None: load["nationalHoliday"] = self.nationalHoliday
         return load
 
