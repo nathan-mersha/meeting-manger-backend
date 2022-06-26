@@ -161,6 +161,7 @@ def validate_token_and_get_user(token):
     try:
         decoded_token_data = jwt.decode(token,token_encrypter_secret, algorithms="HS256")
     except Exception as e:
+        print(e)
         return "token is corrupted"
 
     user_id = decoded_token_data["id"]

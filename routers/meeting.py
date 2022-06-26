@@ -165,7 +165,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             )
             editedAttendees.append(ma.to_json())
             # send email
-            utcmoment_naive = datetime.fromisoformat(createMeeting.fromDate)
+            utcmoment_naive = createMeeting.fromDate
             utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
             localFormat = "%Y-%m-%d %H:%M:%S"
             localDatetime = utcmoment.astimezone(pytz.timezone(attendeeUser.timezone))            
@@ -278,7 +278,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
     if len(attendee_datas) == 0:
         return {"message" : f"attendee not found"}
     attendee_data = attendee_datas[0]
-    utcmoment_naive = datetime.fromisoformat(meetingData.fromDate)
+    utcmoment_naive = meetingData.fromDate
     utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
     localFormat = "%Y-%m-%d %H:%M:%S"
     localDatetimeHost = utcmoment.astimezone(pytz.timezone(host_data.timezone))            
@@ -347,7 +347,7 @@ async def confirm_meeting(meetingId: str,userId: str, status: MeetingAttendeStat
     if len(attendee_datas) == 0:
         return {"message" : f"attendee not found"}
     attendee_data = attendee_datas[0]
-    utcmoment_naive = datetime.fromisoformat(meetingData.fromDate)
+    utcmoment_naive = meetingData.fromDate
     utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
     localFormat = "%Y-%m-%d %H:%M:%S"
     localDatetimeHost = utcmoment.astimezone(pytz.timezone(host_data.timezone))            
