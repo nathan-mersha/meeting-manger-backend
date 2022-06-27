@@ -201,7 +201,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
     else:
         host_data.meetingInAMouth=1;
         host_data.meetingMouth=f"{datetime.now().month}/{datetime.now().year}";
-    host_data.meetingTotal=host_data.meetingInAMouth+1;
+    host_data.meetingTotal=host_data.meetingTotal+1;
     user_model_dal.update(query=user_query,update_data=host_data.to_json())
     message = {
                     "userId" : user_id,
