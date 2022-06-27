@@ -79,7 +79,7 @@ class UserModel(BaseModel):
             password=user_json["password"] if "password" in user_json else None,
             isEmailVerified=user_json["isEmailVerified"] if "isEmailVerified" in user_json else None,
             isPhoneVerified=user_json["isPhoneVerified"] if "isPhoneVerified" in user_json else None,
-            isPublic=user_json["isPublic"] if "isPublic" in user_json else None,
+            isPublic=user_json["isPublic"] if "isPublic" in user_json else True,
             payload=user_json["payload"] if "payload" in user_json else None,
             planType=user_json["planType"] if "planType" in user_json else None,
             countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
