@@ -37,6 +37,7 @@ class UserModel(BaseModel):
     password: Optional[str] = None
     isEmailVerified:Optional[bool] = False
     isPhoneVerified:Optional[bool] = False
+    isPublic:Optional[bool] = True
     payload: Optional[dict] = {}
     planType: Optional[str] = "basic"
     countryCode: Optional[str] = None
@@ -78,6 +79,7 @@ class UserModel(BaseModel):
             password=user_json["password"] if "password" in user_json else None,
             isEmailVerified=user_json["isEmailVerified"] if "isEmailVerified" in user_json else None,
             isPhoneVerified=user_json["isPhoneVerified"] if "isPhoneVerified" in user_json else None,
+            isPublic=user_json["isPublic"] if "isPublic" in user_json else None,
             payload=user_json["payload"] if "payload" in user_json else None,
             planType=user_json["planType"] if "planType" in user_json else None,
             countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
@@ -116,6 +118,7 @@ class UserModel(BaseModel):
         if self.password != None: load["password"] = self.password
         if self.isEmailVerified != None: load["isEmailVerified"] = self.isEmailVerified
         if self.isPhoneVerified != None: load["isPhoneVerified"] = self.isPhoneVerified
+        if self.isPublic != None: load["isPublic"] = self.isPublic
         if self.payload != None: load["payload"] = self.payload
         if self.planType != None: load["planType"] = self.planType
         if self.countryCode != None: load["countryCode"] = self.countryCode
@@ -184,6 +187,7 @@ class UpdateUserModel(BaseModel):
     gender: Optional[str] = None
     dob: Optional[str] = None
     profilePicture: Optional[str] = None
+    isPublic: Optional[bool] = True
     availableFrom: Optional[time] = None
     availableTo: Optional[time] = None
     workingDays : Optional[List[AvailableDays]] = [AvailableDays.MONDAY, AvailableDays.TUESDAY, AvailableDays.WEDNESDAY, AvailableDays.THRUSDAY, AvailableDays.FRIDAY]
@@ -203,6 +207,7 @@ class UpdateUserModel(BaseModel):
         if self.gender != None: load["gender"] = self.gender
         if self.dob != None: load["dob"] = self.dob
         if self.profilePicture != None: load["profilePicture"] = self.profilePicture
+        if self.isPublic != None: load["isPublic"] = self.isPublic
         if self.availableFrom != None: load["availableFrom"] = self.availableFrom    
         if self.availableTo != None: load["availableTo"] = self.availableTo
         if self.workingDays != None: load["workingDays"] = self.workingDays
