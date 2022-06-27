@@ -53,7 +53,7 @@ class ConnectionManager:
         for active_connection in self.active_connections:
             if active_connection["userId"] == userId:
                 isFound=True
-                res = await active_connection["websocket"].send_text(json.dumps(message))
+                res = await active_connection["websocket"].send_text(message)
                 print("res save 1234")
                 if res == "None": # user is not connected, save to db to notify the next time he does
                     print("res save last")
