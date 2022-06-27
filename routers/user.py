@@ -531,7 +531,14 @@ async def change_user_account_status(request:Request,changeUserType: ChangeUserT
 class DeleteUserModel(BaseModel):
     email : str
 
+@router.delete("/delete_user")
+async def delete_user_for_debug(request:Request, token: str=Header(None)):
+    user_id = request.headers["userId"];
+    user_model_dal.delete(query={"id" : user_id})
+    return {"message" : f"user {user_id} deleted"}
+
+
 @router.delete("/delete_for_debug")
 async def delete_user_for_debug(deleteUserModel:DeleteUserModel):
-    user_model_dal.delete(query={"email" : deleteUserModel.email})
+    user_model_dal.delete(query={"id" : deleteUserModel.email})
     return {"message" : f"user {deleteUserModel.email} deleted"}
