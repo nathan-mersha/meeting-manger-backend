@@ -153,7 +153,7 @@ async def create(createMeeting: MeetingModel,request:Request,background_tasks:Ba
             )
             editedAttendees.append(ma.to_json())
 
-            smsMessage = f"Request to join a meeting below link to procceed. https://mmclient.ml/completeProfile/{meetingAttendee} your password is {randomPasswordForNewUser}"
+            smsMessage = f"Request to join a meeting below link to proceed. https://mmclient.ml/completeProfile/{meetingAttendee} your password is {randomPasswordForNewUser}"
             background_tasks.add_task(sms.send,meetingAttendee, smsMessage)
         else:
             attendeeUser = attendeeDatas[0]
