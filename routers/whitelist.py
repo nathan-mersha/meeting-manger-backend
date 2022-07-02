@@ -62,7 +62,6 @@ async def create(createWhiteList: CreateWhiteListModel, request: Request, backgr
         note=createWhiteList.note
     )
     await whiteList_model_dal.create(whiteList)
-
     email_recipient = partyB.email
     email_head = f"{partyA.firstName} has requested you to be in his white list"
     email_body = f'''
