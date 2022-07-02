@@ -5,7 +5,7 @@ from typing import Union
 import uuid
 import jwt
 from datetime import date, datetime, timedelta
-
+import re
 from pytz import timezone
 from dal.config import ConfigModelDAL
 from dal.user import UserModelDAL
@@ -355,11 +355,18 @@ async def change_password(request:Request, changePassword: ChangePasswordModel, 
 @router.put("/update_profile")
 async def update_profile(request:Request, updateUser: UpdateUserModel,background_tasks:BackgroundTasks, token: str=Header(None) ):
     user_id = request.headers["userId"]    
+    if(updateUser.email == None):
+        return HTTPException(status_code=400, detail="email is required")
+
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", updateUser.email):
+        return HTTPException(status_code=400, detail="email is not valid")
+    
     user_query = {"id" : user_id}
     users = user_model_dal.read(query=user_query, limit=1)
+    
     if len(users) == 0:
         return HTTPException(status_code=401, detail="user does not exist")
-
+        
     user = users[0]
     updatedDataJSON = updateUser.to_json()
 
@@ -460,6 +467,11 @@ async def update_user(request:Request,id:str,updateUser: UpdateUserModel,backgro
     validate=await validate_permission(request)
     if(not validate):
        return HTTPException(status_code=401, detail="permission denied")
+    if(updateUser.email == None):
+        return HTTPException(status_code=400, detail="email is required")
+         
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", updateUser.email):
+        return HTTPException(status_code=400, detail="email is not valid")
 
     user_id = id    
     user_query = {"id" : user_id}
