@@ -42,6 +42,12 @@ router = APIRouter(
 @router.post("/signup")
 async def sign_up_user(signUpData: SignUpModel, background_tasks: BackgroundTasks):
     # checking if user email does not already exists
+    if(signUpData.email == None):
+        return HTTPException(status_code=400, detail="email is required")
+         
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", signUpData.email):
+        return HTTPException(status_code=400, detail="email is not valid")
+
     user_datas = user_model_dal.read({"email" : signUpData.email})
 
     if len(user_datas) > 0:
@@ -552,5 +558,5 @@ async def delete_user_for_debug(request:Request, token: str=Header(None)):
 
 @router.delete("/delete_for_debug")
 async def delete_user_for_debug(deleteUserModel:DeleteUserModel):
-    user_model_dal.delete(query={"id" : deleteUserModel.email})
+    user_model_dal.delete(query={"email" : deleteUserModel.email})
     return {"message" : f"user {deleteUserModel.email} deleted"}
