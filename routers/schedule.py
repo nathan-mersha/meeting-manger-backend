@@ -5,6 +5,7 @@ from dal.schedule import ScheduleModelDAL
 from dal.user import UserModelDAL
 from dal.whitelist import WhiteListModelDAL
 from lib.notifier import ConnectionManager
+from model.meeting import MeetingModeModel
 from model.schedule import ScheduleModel, UpdateScheduleModel, RequestAvailableTimeModel
 from datetime import datetime
 import phonenumbers
@@ -111,11 +112,14 @@ def getAllIntersection(parties):
 @router.post("/create/multiple")
 async def create_multiple(createSchedules: List[ScheduleModel], request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
-    
+
     for createSchedule in createSchedules:
         if createSchedule.id == None:
             createSchedule.id = str(uuid.uuid4())
         createSchedule.userId = userId
+        if createSchedule.mode == None:
+            createSchedule.mode = MeetingModeModel.virtual
+
         createSchedule.firstModified = datetime.now()
         createSchedule.lastModified = datetime.now()
 
@@ -160,8 +164,10 @@ async def find_my_schedules(whiteListUserId: str, request:Request,page:int=1,lim
 @router.put("/update/{scheduleId}")
 async def update_meeting(updateSchedule: UpdateScheduleModel,scheduleId:str, request:Request, token:str=Header(None)):
     userId = request.headers["userId"]
-
     scheduleQuery = {"id" : scheduleId, "userId" : userId}
+    if updateSchedule.mode == None:
+        updateSchedule.mode = MeetingModeModel.virtual
+        
     schedule_model_dal.update(query=scheduleQuery, update_data=updateSchedule.to_json())
     return {"message" : "schedule successfully updated"}
 
