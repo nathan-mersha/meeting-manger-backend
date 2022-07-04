@@ -12,12 +12,12 @@ class NotificationModel(BaseModel):
     @staticmethod
     def to_model(notification_json):
         return NotificationModel(
-            id=notification_json["id"],
-            user_id=notification_json["userId"],
-            payload=notification_json["payload"],
-            sent=notification_json["sent"],
-            first_modified=notification_json["firstModified"],
-            last_modified=notification_json["lastModified"]
+            id=notification_json["id"] if "id" in notification_json else None,
+            user_id=notification_json["userId"] if "userId" in notification_json else None,
+            payload=notification_json["payload"] if "payload" in notification_json else None,
+            sent=notification_json["sent"] if "sent" in notification_json else None,
+            first_modified=notification_json["firstModified"] if "firstModified" in notification_json else None,
+            last_modified=notification_json["lastModified"] if "lastModified" in notification_json else None,
 
         )
 

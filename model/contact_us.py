@@ -14,13 +14,13 @@ class ContactModel(BaseModel):
     @staticmethod
     def to_model(contact_us_json):
         return ContactModel(
-            id=contact_us_json["id"],
-            title=contact_us_json["title"],
-            body=contact_us_json["body"],
-            sender=contact_us_json["sender"],
-            resolved = contact_us_json["resolved"],
-            firstModified=contact_us_json["firstModified"],
-            lastModified=contact_us_json["lastModified"],
+            id=contact_us_json["id"] if "id" in contact_us_json else None,
+            title=contact_us_json["title"] if "title" in contact_us_json else None,
+            body=contact_us_json["body"] if "body" in contact_us_json else None,
+            sender=contact_us_json["sender"] if "sender" in contact_us_json else None,
+            resolved =contact_us_json["resolved"] if "resolved" in contact_us_json else None,
+            firstModified=contact_us_json["firstModified"] if "firstModified" in contact_us_json else None,
+            lastModified=contact_us_json["lastModified"] if "lastModified" in contact_us_json else None,
         )
 
     def to_json(self):

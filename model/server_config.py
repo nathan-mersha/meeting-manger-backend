@@ -15,12 +15,12 @@ class ConfigModel(BaseModel):
     @staticmethod
     def to_model(config_json):
         return ConfigModel(
-            id=config_json["id"],
-            tokenExpirationInDay=config_json["tokenExpirationInDay"],
-            pricingPlan=config_json["pricingPlan"],
-            promoPeriod=config_json["promoPeriod"],
-            firstModified=config_json["firstModified"],
-            lastModified=config_json["lastModified"]
+            id=config_json["id"] if "id" in config_json else None,
+            tokenExpirationInDay=config_json["tokenExpirationInDay"] if "tokenExpirationInDay" in config_json else None,
+            pricingPlan=config_json["pricingPlan"] if "pricingPlan" in config_json else None,
+            promoPeriod=config_json["promoPeriod"] if "promoPeriod" in config_json else None,
+            firstModified=config_json["firstModified"] if "firstModified" in config_json else None,
+            lastModified=config_json["lastModified"] if "lastModified" in config_json else None,
         )
 
     def to_json(self):

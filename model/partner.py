@@ -18,12 +18,12 @@ class PartnerModel(BaseModel):
     @staticmethod
     def to_model(partner_json):
         return PartnerModel(
-            id=partner_json["id"],
-            subject=partner_json["subject"],
-            partner=partner_json["partner"],
-            areWhiteList=partner_json["areWhiteList"],
-            firstModified=partner_json["firstModified"],
-            lastModified=partner_json["lastModified"],
+            id=partner_json["id"] if "id" in partner_json else None,
+            subject=partner_json["subject"] if "subject" in partner_json else None,
+            partner=partner_json["partner"] if "partner" in partner_json else None,
+            areWhiteList=partner_json["areWhiteList"] if "areWhiteList" in partner_json else None,
+            firstModified=partner_json["firstModified"] if "firstModified" in partner_json else None,
+            lastModified=partner_json["lastModified"] if "lastModified" in partner_json else None,
         ) 
 
     def to_json(self):

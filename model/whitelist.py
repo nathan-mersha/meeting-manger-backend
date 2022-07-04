@@ -26,15 +26,15 @@ class WhiteListModel(BaseModel):
     def to_model(whiteList_json):
         print("to modell..... ....")
         return WhiteListModel(
-            id=whiteList_json["id"],
-            partyA=whiteList_json["partyA"],
-            partyB=whiteList_json["partyB"],
-            partyAAccepted=whiteList_json["partyAAccepted"],
-            partyBAccepted=whiteList_json["partyBAccepted"], 
-            note=whiteList_json["note"],
-            responded=whiteList_json["responded"],
-            firstModified=whiteList_json["firstModified"],
-            lastModified=whiteList_json["lastModified"],
+            id=whiteList_json["id"] if "id" in whiteList_json else None,
+            partyA=whiteList_json["partyA"] if "partyA" in whiteList_json else None,
+            partyB=whiteList_json["partyB"] if "partyB" in whiteList_json else None,
+            partyAAccepted=whiteList_json["partyAAccepted"] if "id" in whiteList_json else None,
+            partyBAccepted=whiteList_json["partyBAccepted"] if "partyBAccepted" in whiteList_json else None,
+            note=whiteList_json["note"] if "note" in whiteList_json else None,
+            responded=whiteList_json["responded"] if "responded" in whiteList_json else None,
+            firstModified=whiteList_json["firstModified"] if "firstModified" in whiteList_json else None,
+            lastModified=whiteList_json["lastModified"] if "lastModified" in whiteList_json else None,
         ) 
 
     def to_json(self):

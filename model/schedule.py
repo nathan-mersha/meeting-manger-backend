@@ -44,15 +44,15 @@ class ScheduleModel(BaseModel):
     @staticmethod
     def to_model(schedule_json):
         return ScheduleModel(
-            id=schedule_json["id"],
-            userId=schedule_json["userId"],
-            fromDate=schedule_json["fromDate"],
-            toDate=schedule_json["toDate"],
-            title=schedule_json["title"],
-            note=schedule_json["note"],
-            mode=schedule_json["mode"],
-            firstModified=schedule_json["firstModified"],
-            lastModified=schedule_json["lastModified"],
+            id=schedule_json["id"] if "id" in schedule_json else None,
+            userId=schedule_json["userId"] if "userId" in schedule_json else None,
+            fromDate=schedule_json["fromDate"] if "fromDate" in schedule_json else None,
+            toDate=schedule_json["toDate"] if "toDate" in schedule_json else None,
+            title=schedule_json["title"] if "title" in schedule_json else None,
+            note=schedule_json["note"] if "note" in schedule_json else None,
+            mode=schedule_json["mode"] if "mode" in schedule_json else None,
+            firstModified=schedule_json["firstModified"] if "firstModified" in schedule_json else None,
+            lastModified=schedule_json["lastModified"] if "lastModified" in schedule_json else None,
         )
 
     def to_json(self):

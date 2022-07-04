@@ -14,13 +14,13 @@ class GroupModel(BaseModel):
     @staticmethod
     def to_model(group_json):
         return GroupModel(
-            id=group_json["id"],
-            name=group_json["name"],
-            description=group_json["description"],
-            owner=group_json["owner"],
-            members=group_json["members"],
-            firstModified=group_json["firstModified"],
-            lastModified=group_json["lastModified"],
+            id=group_json["id"] if "id" in group_json else None,
+            name=group_json["name"] if "name" in group_json else None,
+            description=group_json["description"] if "description" in group_json else None,
+            owner=group_json["owner"] if "owner" in group_json else None,
+            members=group_json["members"] if "members" in group_json else None,
+            firstModified=group_json["firstModified"] if "firstModified" in group_json else None,
+            lastModified=group_json["lastModified"] if "lastModified" in group_json else None,
         )
 
     def to_json(self):

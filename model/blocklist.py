@@ -12,11 +12,11 @@ class BlockListModel(BaseModel):
     @staticmethod
     def to_model(blockList_us_json):
         return BlockListModel(
-            id=blockList_us_json["id"],
-            subject=blockList_us_json["subject"],
-            blocked=blockList_us_json["blocked"],
-            firstModified=blockList_us_json["firstModified"],
-            lastModified=blockList_us_json["lastModified"],
+            id=blockList_us_json["id"] if "id" in blockList_us_json else None,
+            subject=blockList_us_json["subject"] if "subject" in blockList_us_json else None,
+            blocked=blockList_us_json["blocked"] if "blocked" in blockList_us_json else None,
+            firstModified=blockList_us_json["firstModified"] if "firstModified" in blockList_us_json else None,
+            lastModified=blockList_us_json["lastModified"] if "lastModified" in blockList_us_json else None,
         )
 
     def to_json(self):
