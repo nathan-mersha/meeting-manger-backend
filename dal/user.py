@@ -37,13 +37,16 @@ class UserModelDAL:
         user_model.lastModified = datetime.now()
         return self.collection.insert_one(UserModel.to_json(user_model))
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1,select={"_id" : 0}):
+    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1,select={"_id" : 0},from_user=False):
         data= []
         offset = (page * limit) - limit
         response = self.collection.find(query, select).skip(offset).limit(limit).sort(sort, sort_type)
         for document in response:
-            user_model = UserModel.to_model(document)
-            data.append(user_model)
+            if from_user:
+                data.append(UserModel.to_model(document))
+            else:
+                user_model = UserModel.to_model_out(document)
+                data.append(user_model)
         return data
 
     def update(self, query = None, update_data = None):

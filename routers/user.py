@@ -226,7 +226,7 @@ async def login_user(loginModel: LoginModel):
     else:
         user_query = {"phoneNumber" : loginModel.emailOrPhoneNumber}
 
-    users =  user_model_dal.read(query=user_query, limit=1)
+    users =  user_model_dal.read(query=user_query, limit=1,from_user=True)
     
     if len(users) == 0:
         return HTTPException(status_code=401, detail="email/phoneNumber does not exist") 

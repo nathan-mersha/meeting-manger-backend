@@ -58,7 +58,43 @@ class UserModel(BaseModel):
         if "@" not in v:
             raise ValueError("email must contain @")
         return v
+
         
+    @staticmethod
+    def to_model_out(user_json):
+        return UserModel(
+            id=user_json["id"] if "id" in user_json else None,
+            firstName=user_json["firstName"] if "firstName" in user_json else None,
+            lastName=user_json["lastName"] if "lastName" in user_json else None,
+            companyName=user_json["companyName"] if "companyName" in user_json else None,
+            title=user_json["title"] if "title" in user_json else None,
+            email=user_json["email"] if "email" in user_json else None,
+            phoneNumber=user_json["phoneNumber"] if "phoneNumber" in user_json else None,
+            gender=user_json["gender"] if "gender" in user_json else None,
+            dob=user_json["dob"] if "dob" in user_json else None,
+            profilePicture=user_json["profilePicture"] if "profilePicture" in user_json else None,
+            availableFrom=user_json["availableFrom"] if "availableFrom" in user_json else None,
+            availableTo=user_json["availableTo"] if "availableTo" in user_json else None,
+            userType=user_json["userType"] if "userType" in user_json else None,
+            workingDays=user_json["workingDays"] if "workingDays" in user_json else None,
+            isEmailVerified=user_json["isEmailVerified"] if "isEmailVerified" in user_json else None,
+            isPhoneVerified=user_json["isPhoneVerified"] if "isPhoneVerified" in user_json else None,
+            isPublic=user_json["isPublic"] if "isPublic" in user_json else True,
+            payload=user_json["payload"] if "payload" in user_json else None,
+            planType=user_json["planType"] if "planType" in user_json else None,
+            countryCode=user_json["countryCode"] if "countryCode" in user_json else None,
+            country=user_json["country"] if "country" in user_json else None,
+            timezone=user_json["timezone"] if "timezone" in user_json else "UTC",
+            meetingInAMouth=user_json["meetingInAMouth"] if "meetingInAMouth" in user_json else 0,
+            meetingTotal=user_json["meetingTotal"] if "meetingTotal" in user_json else 0,
+            meetingMouth=user_json["meetingMouth"] if "meetingMouth" in user_json else None,
+            nationalHoliday=user_json["nationalHoliday"] if "nationalHoliday" in user_json else None,
+            isAccountDeactivated=user_json["isAccountDeactivated"] if "isAccountDeactivated" in user_json else None,
+            isAccountLocked=user_json["isAccountLocked"] if "isAccountLocked" in user_json else None,
+            planTypeIsActiveTill=user_json["planTypeIsActiveTill"] if "planTypeIsActiveTill" in user_json else None,
+            firstModified=user_json["firstModified"] if "firstModified" in user_json else None,
+            lastModified=user_json["lastModified"] if "lastModified" in user_json else None
+        )
     @staticmethod
     def to_model(user_json):
         return UserModel(
