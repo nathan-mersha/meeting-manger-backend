@@ -30,7 +30,7 @@ class ConnectionManager:
         notificationData= self.notification_model_dal.read(notification)
         print(len(notificationData))
         for notification in notificationData:
-            res_from_sock = await self.send_personal_message(json.dumps(notification.payload), notification.user_id)
+            res_from_sock = await self.send_personal_message(notification.payload, notification.user_id)
             if res_from_sock == True:
                 notification = {"id" : notification.id}
                 notificationUpdate={"sent":True}        
@@ -53,6 +53,7 @@ class ConnectionManager:
         for active_connection in self.active_connections:
             if active_connection["userId"] == userId:
                 isFound=True
+                message["id"]=str(uuid.uuid4())
                 res = await active_connection["websocket"].send_text(json.dumps(message))
                 print("res save 1234")
                 if res == "None": # user is not connected, save to db to notify the next time he does
