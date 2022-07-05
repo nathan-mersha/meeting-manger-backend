@@ -1,5 +1,5 @@
 from collections import UserDict
-from datetime import datetime
+from random import random
 from typing import Dict, List
 import uuid
 from starlette.websockets import WebSocket
@@ -51,8 +51,8 @@ class ConnectionManager:
         for active_connection in self.active_connections:
             if active_connection["userId"] == userId:
                 isFound = True
-                current_date = datetime.now()
-                message["id"] = int(current_date.strftime("%d%H%M%S"))
+                
+                message["id"] =random.sample(range(10, 100), 10)
                 res=await active_connection["websocket"].send_text(json.dumps(message))
                 print("res save 1234")
                 if res == "None":  # user is not connected, save to db to notify the next time he does
