@@ -51,8 +51,11 @@ class ConnectionManager:
         for active_connection in self.active_connections:
             if active_connection["userId"] == userId:
                 isFound = True
-                
-                message["id"] =random.sample(range(10, 30), 10)
+                ran=""
+                for i in range(0, 5):
+                    ran+=random.randint(0,100);
+
+                message["id"] =ran;
                 res=await active_connection["websocket"].send_text(json.dumps(message))
                 print("res save 1234")
                 if res == "None":  # user is not connected, save to db to notify the next time he does
