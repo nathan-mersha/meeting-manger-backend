@@ -52,7 +52,7 @@ class ConnectionManager:
             if active_connection["userId"] == userId:
                 isFound = True
                 current_date = datetime.now()
-                message["id"] = int(current_date.strftime("%Y%m%d%H%M%S"))
+                message["id"] = int(current_date.strftime("%d%H%M%S"))
                 res=await active_connection["websocket"].send_text(json.dumps(message))
                 print("res save 1234")
                 if res == "None":  # user is not connected, save to db to notify the next time he does
