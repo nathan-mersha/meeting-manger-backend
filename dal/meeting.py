@@ -46,7 +46,9 @@ class MeetingModelDAL:
                 meeting_model.status = MeetingStatus.ended 
             data.append(meeting_model)
         return data
-
+    def count(self, query = {},select={"_id" : 0}):
+        response = self.collection.find(query, select).count()
+        return response
     def update(self, query, update_data):
         update_data["lastModified"] = datetime.now()
         set_update = {"$set": update_data}

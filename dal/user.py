@@ -15,32 +15,36 @@ class UserModelDAL:
         # database connection string
         data_base_connection_str = str(self.config['mongodb']['database_url'])
         data_base_name = str(self.config['mongodb']['database_name'])
-        client = pymongo.MongoClient(data_base_connection_str, serverSelectionTimeoutMS=5000)
+        client = pymongo.MongoClient(
+            data_base_connection_str, serverSelectionTimeoutMS=5000)
         db = client[data_base_name]
         self.collection = db[self.COLLECTION_NAME]
 
     async def create_index(self):
         print("Creating user indexes for user model")
-        
-        indexInfo = self.collection.index_information() 
+
+        indexInfo = self.collection.index_information()
         indexKeys = indexInfo.keys()
 
         if "id_1" not in indexKeys:
             print("creating new index for user - id")
-            self.collection.create_index([('id', pymongo.ASCENDING)],unique=True)
+            self.collection.create_index(
+                [('id', pymongo.ASCENDING)], unique=True)
 
         if "phoneNumber_text" not in indexKeys:
-            self.collection.create_index([('phoneNumber', 'text'),('email', 'text'),('firstName', 'text')])
+            self.collection.create_index(
+                [('phoneNumber', 'text'), ('email', 'text'), ('firstName', 'text')])
 
     async def create(self, user_model: UserModel):
         user_model.firstModified = datetime.now()
         user_model.lastModified = datetime.now()
         return self.collection.insert_one(UserModel.to_json(user_model))
 
-    def read(self, query = {}, limit = 24, sort = 'firstModified', sort_type = pymongo.DESCENDING, page=1,select={"_id" : 0},from_user=False):
-        data= []
+    def read(self, query={}, limit=24, sort='firstModified', sort_type=pymongo.DESCENDING, page=1, select={"_id": 0}, from_user=False):
+        data = []
         offset = (page * limit) - limit
-        response = self.collection.find(query, select).skip(offset).limit(limit).sort(sort, sort_type)
+        response = self.collection.find(query, select).skip(
+            offset).limit(limit).sort(sort, sort_type)
         for document in response:
             if from_user:
                 data.append(UserModel.to_model(document))
@@ -48,7 +52,9 @@ class UserModelDAL:
                 user_model = UserModel.to_model_out(document)
                 data.append(user_model)
         return data
-
+    def count(self, query = {},select={"_id" : 0}):
+        response = self.collection.find(query, select).count()
+        return response
     def update(self, query = None, update_data = None):
         print("update user data ....")
 

@@ -21,7 +21,7 @@ from dal.schedule import ScheduleModelDAL
 from dal.notification import NotificationModelDAL
 from model.server_config import ConfigModel
 
-from routers import blocklist, schedule, contact_us, group, meeting, partner, server_config, user, whitelist, search
+from routers import blocklist, schedule, contact_us, group, meeting, partner, server_config, user, whitelist, search , dashboard
 
 app = FastAPI()
 # web socket notifier
@@ -53,6 +53,7 @@ app.include_router(partner.router)
 app.include_router(whitelist.router)
 app.include_router(blocklist.router)
 app.include_router(search.router)
+app.include_router(dashboard.router)
 app.include_router(schedule.router)
 
 
