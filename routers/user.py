@@ -341,7 +341,7 @@ async def change_password(request:Request, changePassword: ChangePasswordModel, 
     hashed_incomming_old_password = hashlib.sha256(str(changePassword.old_password).encode('utf-8')).hexdigest()
     user_query = {"id": user_id}
 
-    users = user_model_dal.read(query=user_query, limit=1)
+    users = user_model_dal.read(query=user_query, limit=1,from_user=True)
     if len(users) == 0:
         return HTTPException(status_code=401, detail="user does not exist")
 
