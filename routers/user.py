@@ -317,10 +317,8 @@ async def reset_password(resetPassword: ResetPasswordModel, background_tasks: Ba
     users = user_model_dal.read(query=user_query, limit=1)
     if len(users) == 0:
         return HTTPException(status_code=400, detail="user by email not found")
-
     user = users[0]
     user_payload = user.payload
-
     if str(user_payload["resetCode"]) != str(resetPassword.reset_code):
         return HTTPException(status_code=401, detail="reset code is not correct")
 
